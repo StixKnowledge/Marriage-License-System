@@ -7,13 +7,35 @@ export class ExcelGenerator {
     private templatePath: string;
 
     constructor() {
-        // Path relative to execution context (usually ui/ from process.cwd() in API routes)
-        // Moving it inside src/assets to ensure it's included in builds
         this.templatePath = path.join(process.cwd(), "src", "assets", "excel", "template.xlsx");
     }
 
     private cmToPoints(cm: number): number {
-        return (cm / 2.54) * 72;
+        return (cm / 2.54) * 96;
+    }
+
+    // Essential to prevent "Cell Information" errors caused by illegal XML chars
+    private sanitize(val: any): string {
+        if (val === null || val === undefined) return "";
+        return val.toString().replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]/g, "");
+    }
+
+    private formatName(first: string, middle: string, last: string, suffix?: string, customSuffix?: string): { f: string, m: string, l: string } {
+        let finalFirst = first || "";
+        const sfx = suffix === "Others" ? customSuffix : suffix;
+        if (sfx) {
+            finalFirst = `${finalFirst} ${sfx}`.trim();
+        }
+        return {
+            f: this.sanitize(finalFirst).toUpperCase(),
+            m: this.sanitize(middle).toUpperCase(),
+            l: this.sanitize(last).toUpperCase()
+        };
+    }
+
+    private cleanTown(town: string): string {
+        if (!town) return "";
+        return town.replace(/\(Capital\)/gi, "").trim();
     }
 
     async generate(data: ExcelData): Promise<Buffer> {
@@ -29,13 +51,24 @@ export class ExcelGenerator {
         const monthNow = now.toLocaleString('default', { month: 'long' });
         const yearNow = now.getFullYear().toString();
 
-        // --- PREPARE DATA ---
-        const gTownProv = `${data.gTown || ''}, ${data.gProv || 'Nueva Vizcaya'}`;
-        const bTownProv = `${data.bTown || ''}, ${data.bProv || 'Nueva Vizcaya'}`;
-        const gFullAddr = `Brgy. , ${data.gBrgy || ''}, ${gTownProv}`;
-        const bFullAddr = `Brgy. , ${data.bBrgy || ''}, ${bTownProv}`;
+        const gCleanTown = this.cleanTown(data.gTown);
+        const bCleanTown = this.cleanTown(data.bTown);
+        const gTownProv = `${gCleanTown}, ${data.gProv || 'Nueva Vizcaya'}`;
+        const bTownProv = `${bCleanTown}, ${data.bProv || 'Nueva Vizcaya'}`;
+        const gFullAddr = `Brgy., ${data.gBrgy || ''}, ${gTownProv}`;
+        const bFullAddr = `Brgy., ${data.bBrgy || ''}, ${bTownProv}`;
 
-        // --- SHEET VISIBILITY & DELETION LOGIC ---
+        // Formatted Names (Merged Suffixes)
+        const groom = this.formatName(data.gFirst, data.gMiddle, data.gLast, data.gSuffix, data.gCustomSuffix);
+        const bride = this.formatName(data.bFirst, data.bMiddle, data.bLast, data.bSuffix, data.bCustomSuffix);
+        const gFath = this.formatName(data.gFathF, data.gFathM, data.gFathL, data.gFathSuffix, data.gFathCustomSuffix);
+        const gMoth = this.formatName(data.gMothF, data.gMothM, data.gMothL, data.gMothSuffix, data.gMothCustomSuffix);
+        const bFath = this.formatName(data.bFathF, data.bFathM, data.bFathL, data.bFathSuffix, data.bFathCustomSuffix);
+        const bMoth = this.formatName(data.bMothF, data.bMothM, data.bMothL, data.bMothSuffix, data.bMothCustomSuffix);
+        const gGiver = this.formatName(data.gGiverF, data.gGiverM, data.gGiverL, data.gGiverSuffix, data.gGiverCustomSuffix);
+        const bGiver = this.formatName(data.bGiverF, data.bGiverM, data.bGiverL, data.bGiverSuffix, data.bGiverCustomSuffix);
+
+        // LOGIC FOR SHEETS
         const sheetsToKeep = ["APPLICATION", "Notice"];
         const gAge = data.gAge;
         const bAge = data.bAge;
@@ -55,146 +88,207 @@ export class ExcelGenerator {
             sheetsToKeep.push("AddressBACKnotice", "EnvelopeAddress");
         }
 
-        // --- 1. HANDLE SHEET VISIBILITY & ACTIVE TAB POINTER ---
-        const appSheet = workbook.getWorksheet('APPLICATION') || workbook.getWorksheet(1);
-
-        // APPLICATION is sheetId 1, index 0 in the template
-        const appSheetIndex = workbook.worksheets.findIndex(s => s.name === 'APPLICATION');
-
-        workbook.eachSheet((sheet) => {
-            if (sheetsToKeep.includes(sheet.name)) {
-                sheet.state = 'visible';
+        // --- 1. USE HIDING INSTEAD OF DELETION ---
+        // Physical deletion is likely what is breaking your specific template's XML
+        workbook.worksheets.forEach(sheet => {
+            if (!sheetsToKeep.includes(sheet.name)) {
+                sheet.state = 'veryHidden'; // Keeps it away from users without breaking references
             } else {
-                sheet.state = 'hidden';
+                sheet.state = 'visible';
             }
         });
 
-        if (appSheet) {
-            appSheet.state = 'visible';
-            const workbookViews: any[] = [{
-                x: 0,
-                y: 0,
-                width: 29040,
-                height: 15720,
-                firstSheet: 0,
-                activeTab: appSheetIndex >= 0 ? appSheetIndex : 0,
-                visibility: 'visible'
-            }];
-            workbook.views = workbookViews;
-        }
+        const appSheet = workbook.getWorksheet('APPLICATION') || workbook.getWorksheet(1);
 
-        const safeVal = (val: any): string => (val === null || val === undefined) ? "" : val.toString();
-
-        // --- 2. FILL APPLICATION SHEET ---
+        // --- 2. FILL DATA (USING YOUR ORIGINAL PATHING) ---
         if (appSheet) {
-            // Groom
-            appSheet.getCell('B8').value = safeVal(data.gFirst).toUpperCase();
-            appSheet.getCell('B9').value = safeVal(data.gMiddle).toUpperCase();
-            appSheet.getCell('B10').value = safeVal(data.gLast).toUpperCase();
-            appSheet.getCell('B11').value = safeVal(data.gBday);
+            appSheet.getCell('B8').value = groom.f;
+            appSheet.getCell('B9').value = groom.m;
+            appSheet.getCell('B10').value = groom.l;
+            appSheet.getCell('B11').value = this.sanitize(data.gBday);
             appSheet.getCell('N11').value = data.gAge || 0;
-            appSheet.getCell('B12').value = safeVal(gTownProv);
+            appSheet.getCell('B12').value = this.sanitize(gTownProv);
 
-            const gCountryVal = safeVal(data.gCountry) || 'Philippines';
+            const gCountryVal = this.sanitize(data.gCountry) || 'Philippines';
             appSheet.getCell('L12').value = gCountryVal;
-            appSheet.getCell('M15').value = gCountryVal;
-
             appSheet.getCell('B13').value = "Male";
-            appSheet.getCell('H13').value = safeVal(data.gCitizen) || 'Filipino';
-            appSheet.getCell('B15').value = safeVal(gFullAddr);
-            appSheet.getCell('B16').value = safeVal(data.gReligion);
-            appSheet.getCell('B17').value = safeVal(data.gStatus) || 'Single';
+            appSheet.getCell('H13').value = this.sanitize(data.gCitizen) || 'Filipino';
+            appSheet.getCell('B15').value = this.sanitize(gFullAddr);
+            appSheet.getCell('M15').value = gCountryVal;
+            const gFullRel = data.gReligion === "Others" ? data.gCustomReligion : data.gReligion;
+            appSheet.getCell('B16').value = this.sanitize(gFullRel);
+            appSheet.getCell('B17').value = this.sanitize(data.gStatus) || 'Single';
 
-            appSheet.getCell('B22').value = safeVal(data.gFathF);
-            appSheet.getCell('H22').value = safeVal(data.gFathM);
-            appSheet.getCell('L22').value = safeVal(data.gFathL);
+            appSheet.getCell('B22').value = gFath.f;
+            appSheet.getCell('H22').value = gFath.m;
+            appSheet.getCell('L22').value = gFath.l;
 
-            appSheet.getCell('B26').value = safeVal(data.gMothF);
-            appSheet.getCell('H26').value = safeVal(data.gMothM);
-            appSheet.getCell('L26').value = safeVal(data.gMothL);
+            appSheet.getCell('B26').value = gMoth.f;
+            appSheet.getCell('G26').value = gMoth.m;
+            appSheet.getCell('K26').value = gMoth.l;
 
             const hasGroomGiver = !!(data.gGiverF || data.gGiverL);
             if (hasGroomGiver || (gAge >= 18 && gAge <= 24)) {
-                appSheet.getCell('B30').value = safeVal(data.gGiverF);
-                appSheet.getCell('H30').value = safeVal(data.gGiverM);
-                appSheet.getCell('L30').value = safeVal(data.gGiverL);
-                appSheet.getCell('B31').value = safeVal(data.gGiverRelation);
-                appSheet.getCell('B32').value = safeVal(data.gCitizen) || 'Filipino';
+                appSheet.getCell('B30').value = gGiver.f;
+                appSheet.getCell('H30').value = gGiver.m;
+                appSheet.getCell('L30').value = gGiver.l;
+
+                const gRel = data.gGiverRelation === "Other" ? data.gGiverOtherTitle : data.gGiverRelation;
+                appSheet.getCell('B31').value = this.sanitize(gRel).toUpperCase();
+                appSheet.getCell('B32').value = this.sanitize(data.gCitizen) || 'Filipino';
+            } else {
+                appSheet.getCell('B30').value = "";
+                appSheet.getCell('H30').value = "";
+                appSheet.getCell('L30').value = "";
+                appSheet.getCell('B31').value = "";
+                appSheet.getCell('B32').value = "";
             }
 
+            // Groom & Bride IDs (Conditional)
+            const gFullIdType = data.gIdType === "Others" ? data.gIdCustomType : data.gIdType;
+            const bFullIdType = data.bIdType === "Others" ? data.bIdCustomType : data.bIdType;
+            appSheet.getCell('D39').value = data.gIncludeId ? this.sanitize(`${gFullIdType || ''}: ${data.gIdNo || ''}`) : "";
+            appSheet.getCell('V39').value = data.bIncludeId ? this.sanitize(`${bFullIdType || ''}: ${data.bIdNo || ''}`) : "";
+
             // Bride
-            appSheet.getCell('U8').value = safeVal(data.bFirst).toUpperCase();
-            appSheet.getCell('U9').value = safeVal(data.bMiddle).toUpperCase();
-            appSheet.getCell('U10').value = safeVal(data.bLast).toUpperCase();
-            appSheet.getCell('U11').value = safeVal(data.bBday);
+            appSheet.getCell('U8').value = bride.f;
+            appSheet.getCell('U9').value = bride.m;
+            appSheet.getCell('U10').value = bride.l;
+            appSheet.getCell('U11').value = this.sanitize(data.bBday);
             appSheet.getCell('AF11').value = data.bAge || 0;
-            appSheet.getCell('U12').value = safeVal(bTownProv);
+            appSheet.getCell('U12').value = this.sanitize(bTownProv);
 
-            const bCountryVal = safeVal(data.bCountry) || 'Philippines';
+            const bCountryVal = this.sanitize(data.bCountry) || 'Philippines';
             appSheet.getCell('AE12').value = bCountryVal;
-            appSheet.getCell('AF15').value = bCountryVal;
-
             appSheet.getCell('U13').value = "Female";
-            appSheet.getCell('Z13').value = safeVal(data.bCitizen) || 'Filipino';
-            appSheet.getCell('U15').value = safeVal(bFullAddr);
-            appSheet.getCell('U16').value = safeVal(data.bReligion);
-            appSheet.getCell('U17').value = safeVal(data.bStatus) || 'Single';
+            appSheet.getCell('Z13').value = this.sanitize(data.bCitizen) || 'Filipino';
+            appSheet.getCell('U15').value = this.sanitize(bFullAddr);
+            appSheet.getCell('AF15').value = bCountryVal;
+            const bFullRel = data.bReligion === "Others" ? data.bCustomReligion : data.bReligion;
+            appSheet.getCell('U16').value = this.sanitize(bFullRel);
+            appSheet.getCell('U17').value = this.sanitize(data.bStatus) || 'Single';
 
-            appSheet.getCell('U22').value = safeVal(data.bFathF);
-            appSheet.getCell('Y22').value = safeVal(data.bFathM);
-            appSheet.getCell('AC22').value = safeVal(data.bFathL);
+            appSheet.getCell('U22').value = bFath.f;
+            appSheet.getCell('Y22').value = bFath.m;
+            appSheet.getCell('AC22').value = bFath.l;
 
-            appSheet.getCell('U26').value = safeVal(data.bMothF);
-            appSheet.getCell('Y26').value = safeVal(data.bMothM);
-            appSheet.getCell('AD26').value = safeVal(data.bMothL);
+            appSheet.getCell('U26').value = bMoth.f;
+            appSheet.getCell('Y26').value = bMoth.m;
+            appSheet.getCell('AD26').value = bMoth.l;
 
             const hasBrideGiver = !!(data.bGiverF || data.bGiverL);
             if (hasBrideGiver || (bAge >= 18 && bAge <= 24)) {
-                appSheet.getCell('U30').value = safeVal(data.bGiverF);
-                appSheet.getCell('Y30').value = safeVal(data.bGiverM);
-                appSheet.getCell('AD30').value = safeVal(data.bGiverL);
-                appSheet.getCell('U31').value = safeVal(data.bGiverRelation);
-                appSheet.getCell('U32').value = safeVal(data.bCitizen) || 'Filipino';
+                appSheet.getCell('U30').value = bGiver.f;
+                appSheet.getCell('Y30').value = bGiver.m;
+                appSheet.getCell('AD30').value = bGiver.l;
+
+                const bRel = data.bGiverRelation === "Other" ? data.bGiverOtherTitle : data.bGiverRelation;
+                appSheet.getCell('U31').value = this.sanitize(bRel).toUpperCase();
+                appSheet.getCell('U32').value = this.sanitize(data.bCitizen) || 'Filipino';
+            } else {
+                appSheet.getCell('U30').value = "";
+                appSheet.getCell('Y30').value = "";
+                appSheet.getCell('AD30').value = "";
+                appSheet.getCell('U31').value = "";
+                appSheet.getCell('U32').value = "";
             }
 
-            appSheet.getCell('B37').value = safeVal(dayNow);
-            appSheet.getCell('U37').value = safeVal(dayNow);
-            appSheet.getCell('E37').value = safeVal(monthNow);
-            appSheet.getCell('W37').value = safeVal(monthNow);
-            appSheet.getCell('L37').value = safeVal(yearNow);
-            appSheet.getCell('AD37').value = safeVal(yearNow);
+            appSheet.getCell('F5').value = this.sanitize(dayNow);
+            appSheet.getCell('B37').value = this.sanitize(dayNow);
+            appSheet.getCell('U37').value = this.sanitize(dayNow);
+            appSheet.getCell('G5').value = this.sanitize(monthNow);
+            appSheet.getCell('E37').value = this.sanitize(monthNow);
+            appSheet.getCell('W37').value = this.sanitize(monthNow);
+            appSheet.getCell('L5').value = this.sanitize(yearNow);
+            appSheet.getCell('L37').value = this.sanitize(yearNow);
+            appSheet.getCell('AD37').value = this.sanitize(yearNow);
             appSheet.getCell('B38').value = "Solano, Nueva Vizcaya";
             appSheet.getCell('U38').value = "Solano, Nueva Vizcaya";
         }
 
-        // --- 4. HANDLE IMAGE REPLACEMENT ---
+        // --- 3. FILL EXTRA SHEET IDs ---
+        if (extraSheet) {
+            const extra = workbook.getWorksheet(extraSheet);
+            if (extra) {
+                const gGiverFullIdType = data.gGiverIdType === "Others" ? data.gGiverIdCustomType : data.gGiverIdType;
+                const bGiverFullIdType = data.bGiverIdType === "Others" ? data.bGiverIdCustomType : data.bGiverIdType;
+                const gIdStr = data.gGiverIncludeId ? `${gGiverFullIdType || ''}: ${data.gGiverIdNo || ''}` : "";
+                const bIdStr = data.bGiverIncludeId ? `${bGiverFullIdType || ''}: ${data.bGiverIdNo || ''}` : "";
+
+                if (extraSheet === "CONSENT M&F") { extra.getCell('T25').value = gIdStr; extra.getCell('T58').value = bIdStr; }
+                else if (extraSheet === "CONSENT F") { extra.getCell('T29').value = bIdStr; }
+                else if (extraSheet === "CONSENT M") { extra.getCell('T29').value = gIdStr; }
+                else if (extraSheet === "ADVICE F") { extra.getCell('T25').value = bIdStr; }
+                else if (extraSheet === "ADVICE M") { extra.getCell('T25').value = gIdStr; }
+                else if (extraSheet === "ADVICE M&F") { extra.getCell('T24').value = gIdStr; extra.getCell('T28').value = bIdStr; }
+                else if (extraSheet === "ADVICE M-CONSENT F") { extra.getCell('T23').value = gIdStr; extra.getCell('T60').value = bIdStr; }
+                else if (extraSheet === "ADVICE F-CONSENT M") { extra.getCell('T26').value = gIdStr; extra.getCell('T55').value = bIdStr; }
+            }
+        }
+
+        // --- 4. NOTICE SHEET FILTERING ---
+        const noticeSheet = workbook.getWorksheet('Notice');
+        if (noticeSheet) {
+            const gIsSolano = gCleanTown.toLowerCase().includes("solano");
+            const bIsSolano = bCleanTown.toLowerCase().includes("solano");
+
+            const gNonSolano = !gIsSolano;
+            const bNonSolano = !bIsSolano;
+
+            if (bNonSolano && gNonSolano) {
+                // Both NOT from Solano
+                noticeSheet.getCell('E44').value = this.sanitize(`${bCleanTown}, ${data.bProv || 'Nueva Vizcaya'}`);
+                noticeSheet.getCell('E45').value = this.sanitize(`${gCleanTown}, ${data.gProv || 'Nueva Vizcaya'}`);
+            } else if (bNonSolano) {
+                // Only Bride NOT from Solano
+                noticeSheet.getCell('E44').value = this.sanitize(`${bCleanTown}, ${data.bProv || 'Nueva Vizcaya'}`);
+                noticeSheet.getCell('E45').value = "";
+            } else if (gNonSolano) {
+                // Only Groom NOT from Solano
+                noticeSheet.getCell('E44').value = this.sanitize(`${gCleanTown}, ${data.gProv || 'Nueva Vizcaya'}`);
+                noticeSheet.getCell('E45').value = "";
+            } else {
+                // Both ARE from Solano
+                noticeSheet.getCell('E44').value = "";
+                noticeSheet.getCell('E45').value = "";
+            }
+        }
+
+        // --- 5. HANDLE IMAGE REPLACEMENT ---
         if (data.coupleImagePath && fs.existsSync(data.coupleImagePath)) {
             const noticeSheet = workbook.getWorksheet('Notice');
             if (noticeSheet) {
                 try {
-                    let ext = (data.imageExtension || 'png').toLowerCase();
-                    if (ext === 'jpg') ext = 'jpeg';
+                    const imageId = workbook.addImage({
+                        filename: data.coupleImagePath,
+                        extension: 'png', // Assuming PNG as handled in the route
+                    });
 
-                    if (['jpeg', 'png', 'gif'].includes(ext)) {
-                        const imageId = workbook.addImage({
-                            filename: data.coupleImagePath,
-                            extension: ext as any,
-                        });
-
-                        // Standard template coordinates for Picture 3 in 'Notice'
-                        noticeSheet.addImage(imageId, {
-                            tl: { col: 19, row: 10 } as any,
-                            ext: { cx: 2057400, cy: 1343025 } as any,
-                            editAs: 'oneCell'
-                        });
-                    }
+                    // Positioning like Python: Cell T11
+                    // 3.75cm height, 5.73cm width
+                    // exceljs uses pixels or points depending on method. 
+                    // Let's use extents (96 dpi based pixels)
+                    noticeSheet.addImage(imageId, {
+                        tl: { col: 19, row: 10 }, // T is column 20 (0-indexed is 19), 11 is row 11 (0-indexed is 10)
+                        ext: {
+                            width: (5.73 / 2.54) * 96,
+                            height: (3.75 / 2.54) * 96
+                        }
+                    });
                 } catch (error) {
-                    console.error("Warning: Photo insertion failed:", error);
+                    console.error("Warning: Image overlay failed:", error);
                 }
             }
         }
+        // --- 5. CRITICAL WORKBOOK METADATA RESET ---
+        // This clears the "broken" view data that often causes the recovery log error
+        workbook.views = [
+            {
+                x: 0, y: 0, width: 10000, height: 20000,
+                firstSheet: 0, activeTab: 0, visibility: 'visible'
+            }
+        ];
 
-        // --- 5. FINALIZE ---
         const buffer = await workbook.xlsx.writeBuffer();
         return Buffer.from(buffer);
     }
