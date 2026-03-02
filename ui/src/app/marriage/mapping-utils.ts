@@ -1,5 +1,5 @@
 import { splitName } from "./utils";
-import { INITIAL_FORM_STATE, SUFFIX_OPTIONS, RELIGIONS } from "./constants";
+import { INITIAL_FORM_STATE, SUFFIX_OPTIONS, RELIGIONS, VALID_ID_TYPES } from "./constants";
 
 export const mapAppToFormData = (app: any) => {
     // Handle different structures (UserDashboard passes raw app with applicants array, 
@@ -45,6 +45,17 @@ export const mapAppToFormData = (app: any) => {
         gGiverL: groomGiver.last,
         gGiverRelation: groom.giver_relationship || "",
 
+        // Groom IDs
+        gIdType: (VALID_ID_TYPES.includes(groom.valid_id_type) ? groom.valid_id_type : (groom.valid_id_type ? "Others" : "")) || "",
+        gIdCustomType: (!VALID_ID_TYPES.includes(groom.valid_id_type) && groom.valid_id_type) ? groom.valid_id_type : "",
+        gIdNo: groom.valid_id_number || "",
+        gIncludeId: !!groom.valid_id_number,
+
+        gGiverIdType: (VALID_ID_TYPES.includes(groom.giver_id_type) ? groom.giver_id_type : (groom.giver_id_type ? "Others" : "")) || "",
+        gGiverIdCustomType: (!VALID_ID_TYPES.includes(groom.giver_id_type) && groom.giver_id_type) ? groom.giver_id_type : "",
+        gGiverIdNo: groom.giver_id_number || "",
+        gGiverIncludeId: !!groom.giver_id_number,
+
         // Bride
         bFirst: bride.first_name || "",
         bMiddle: bride.middle_name || "",
@@ -68,6 +79,17 @@ export const mapAppToFormData = (app: any) => {
         bGiverM: brideGiver.middle,
         bGiverL: brideGiver.last,
         bGiverRelation: bride.giver_relationship || "",
+
+        // Bride IDs
+        bIdType: (VALID_ID_TYPES.includes(bride.valid_id_type) ? bride.valid_id_type : (bride.valid_id_type ? "Others" : "")) || "",
+        bIdCustomType: (!VALID_ID_TYPES.includes(bride.valid_id_type) && bride.valid_id_type) ? bride.valid_id_type : "",
+        bIdNo: bride.valid_id_number || "",
+        bIncludeId: !!bride.valid_id_number,
+
+        bGiverIdType: (VALID_ID_TYPES.includes(bride.giver_id_type) ? bride.giver_id_type : (bride.giver_id_type ? "Others" : "")) || "",
+        bGiverIdCustomType: (!VALID_ID_TYPES.includes(bride.giver_id_type) && bride.giver_id_type) ? bride.giver_id_type : "",
+        bGiverIdNo: bride.giver_id_number || "",
+        bGiverIncludeId: !!bride.giver_id_number,
 
         contactNumber: app.contact_number || "",
     };

@@ -116,6 +116,10 @@ export async function submitApplication(formData: any, generatedCode: string, us
         mother_name: [formData.gMothF, formData.gMothM, formData.gMothL].filter(Boolean).join(' ') || null,
         giver_name: [formData.gGiverF, formData.gGiverM, formData.gGiverL].filter(Boolean).join(' ') || null,
         giver_relationship: formData.gGiverOtherTitle || formData.gGiverRelation || null,
+        valid_id_type: formData.gIncludeId ? (formData.gIdType === "Others" ? formData.gIdCustomType : formData.gIdType) : null,
+        valid_id_number: formData.gIncludeId ? formData.gIdNo : null,
+        giver_id_type: formData.gGiverIncludeId ? (formData.gGiverIdType === "Others" ? formData.gGiverIdCustomType : formData.gGiverIdType) : null,
+        giver_id_number: formData.gGiverIncludeId ? formData.gGiverIdNo : null,
     };
 
     console.log('Inserting groom applicant...');
@@ -145,6 +149,10 @@ export async function submitApplication(formData: any, generatedCode: string, us
         mother_name: [formData.bMothF, formData.bMothM, formData.bMothL].filter(Boolean).join(' ') || null,
         giver_name: [formData.bGiverF, formData.bGiverM, formData.bGiverL].filter(Boolean).join(' ') || null,
         giver_relationship: formData.bGiverOtherTitle || formData.bGiverRelation || null,
+        valid_id_type: formData.bIncludeId ? (formData.bIdType === "Others" ? formData.bIdCustomType : formData.bIdType) : null,
+        valid_id_number: formData.bIncludeId ? formData.bIdNo : null,
+        giver_id_type: formData.bGiverIncludeId ? (formData.bGiverIdType === "Others" ? formData.bGiverIdCustomType : formData.bGiverIdType) : null,
+        giver_id_number: formData.bGiverIncludeId ? formData.bGiverIdNo : null,
     };
 
     console.log('Inserting bride applicant...');

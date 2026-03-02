@@ -57,8 +57,32 @@ export default function ApplicationReviewOverlay({ selectedApp, onClose }: Appli
                                                     <DetailItem label="Citizenship" value={person.citizenship} />
                                                     <DetailItem label="Religion" value={person.religion} />
                                                 </div>
+                                                {person.valid_id_number && (
+                                                    <div className="p-3 bg-zinc-50 border border-zinc-100 rounded-xl space-y-1">
+                                                        <p className="text-[10px] font-black text-zinc-400 uppercase tracking-tight">Valid ID Information</p>
+                                                        <div className="flex justify-between items-center">
+                                                            <span className="text-xs font-bold text-zinc-600">{person.valid_id_type}</span>
+                                                            <span className="text-xs font-mono font-black text-indigo-600">{person.valid_id_number}</span>
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </div>
                                         </section>
+
+                                        {person.giver_name && person.age >= 18 && person.age <= 24 && (
+                                            <section className="space-y-3">
+                                                <h4 className="text-[10px] font-black uppercase text-zinc-400 tracking-widest border-b pb-1">Legal {person.age <= 20 ? 'Consent' : 'Advice'} Provided By</h4>
+                                                <div className="space-y-3">
+                                                    <DetailItem label="Full Name" value={person.giver_name} />
+                                                    <div className="grid grid-cols-2 gap-3">
+                                                        <DetailItem label="Relationship" value={person.giver_relationship} />
+                                                        {person.giver_id_number && (
+                                                            <DetailItem label="ID Number" value={person.giver_id_number} />
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </section>
+                                        )}
 
                                         {/* Residence */}
                                         <section className="space-y-3">

@@ -41,6 +41,10 @@ export async function getAllApplications(page: number = 1, limit: number = 50) {
                 mother_name,
                 giver_name,
                 giver_relationship,
+                valid_id_type,
+                valid_id_number,
+                giver_id_type,
+                giver_id_number,
                 addresses (
                     barangay,
                     municipality,
@@ -379,6 +383,10 @@ export async function updateApplicationDetails(applicationId: string, formData: 
                     mother_name: `${formData[`${prefix}MothF`]} ${formData[`${prefix}MothM`]} ${formData[`${prefix}MothL`]}`.trim(),
                     giver_name: `${formData[`${prefix}GiverF`]} ${formData[`${prefix}GiverM`]} ${formData[`${prefix}GiverL`]}`.trim(),
                     giver_relationship: formData[`${prefix}GiverRelation`] === "Other" ? formData[`${prefix}GiverOtherTitle`] : formData[`${prefix}GiverRelation`],
+                    valid_id_type: formData[`${prefix}IncludeId`] ? (formData[`${prefix}IdType`] === "Others" ? formData[`${prefix}IdCustomType`] : formData[`${prefix}IdType`]) : null,
+                    valid_id_number: formData[`${prefix}IncludeId`] ? formData[`${prefix}IdNo`] : null,
+                    giver_id_type: formData[`${prefix}GiverIncludeId`] ? (formData[`${prefix}GiverIdType`] === "Others" ? formData[`${prefix}GiverIdCustomType`] : formData[`${prefix}GiverIdType`]) : null,
+                    giver_id_number: formData[`${prefix}GiverIncludeId`] ? formData[`${prefix}GiverIdNo`] : null,
                     updated_at: new Date().toISOString()
                 })
                 .eq("application_id", applicationId)
