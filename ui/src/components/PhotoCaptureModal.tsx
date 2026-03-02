@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Camera, X, Loader2, Upload, Paperclip } from "lucide-react";
+import { Camera, X, Loader2, Upload, Paperclip, RefreshCw } from "lucide-react";
 import { uploadApplicationPhoto } from "@/app/dashboard/admin/applications/actions";
 import { compressImage } from "@/utils/image-utils";
 
@@ -23,6 +23,7 @@ export default function PhotoCaptureModal({
     const [capturedImage, setCapturedImage] = useState<string | null>(null);
     const [uploadingPhoto, setUploadingPhoto] = useState(false);
     const [photoMessage, setPhotoMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+    const [facingMode, setFacingMode] = useState<"user" | "environment">("environment");
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Camera refs
@@ -41,7 +42,7 @@ export default function PhotoCaptureModal({
             const startCamera = async () => {
                 try {
                     const stream = await navigator.mediaDevices.getUserMedia({
-                        video: { facingMode: 'environment' },
+                        video: { facingMode: facingMode },
                         audio: false
                     });
                     streamRef.current = stream;
@@ -63,7 +64,7 @@ export default function PhotoCaptureModal({
                 streamRef.current = null;
             }
         };
-    }, [showCamera, capturedImage]);
+    }, [showCamera, capturedImage, facingMode]);
 
     const handleCapture = async () => {
         if (!videoRef.current || !canvasRef.current) return;
@@ -76,6 +77,12 @@ export default function PhotoCaptureModal({
         // Use standard canvas capture first
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
+
+        if (facingMode === 'user') {
+            ctx.translate(canvas.width, 0);
+            ctx.scale(-1, 1);
+        }
+
         ctx.drawImage(video, 0, 0);
 
         const rawData = canvas.toDataURL('image/jpeg');
@@ -234,8 +241,16 @@ export default function PhotoCaptureModal({
                                     autoPlay
                                     playsInline
                                     muted
-                                    className="w-full h-64 bg-zinc-100 rounded-2xl object-cover"
+                                    className="w-full h-64 bg-zinc-100 rounded-2xl object-cover transform scale-x-[-1]"
+                                    style={facingMode === 'user' ? { transform: 'scaleX(-1)' } : { transform: 'scaleX(1)' }}
                                 />
+                                <button
+                                    onClick={() => setFacingMode(prev => prev === "user" ? "environment" : "user")}
+                                    className="absolute bottom-4 right-4 h-10 w-10 rounded-full bg-black/40 backdrop-blur-md hover:bg-black/60 flex items-center justify-center transition-all z-20 group"
+                                    title="Switch Camera"
+                                >
+                                    <RefreshCw className="h-5 w-5 text-white transition-transform group-hover:rotate-180" />
+                                </button>
                                 <canvas ref={canvasRef} className="hidden" />
                             </div>
                             <button
