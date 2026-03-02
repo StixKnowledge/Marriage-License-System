@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
-import EditApplicationModal from "../../marriage/components/EditApplicationModal";
+import ApplicationReviewOverlay from "./components/ApplicationReviewOverlay";
 
 interface Application {
     id: string;
@@ -46,6 +46,7 @@ export default function UserDashboard() {
     const [applications, setApplications] = useState<Application[]>([]);
     const [loading, setLoading] = useState(true);
     const [user, setUser] = useState<unknown>(null);
+    const [selectedApp, setSelectedApp] = useState<Application | null>(null);
 
     const fetchApplications = async (supabase: ReturnType<typeof createClient>, userId: string) => {
         setLoading(true);
@@ -246,10 +247,6 @@ export default function UserDashboard() {
         };
     }, []);
 
-    const [selectedApp, setSelectedApp] = useState<Application | null>(null);
-    const [showEditForm, setShowEditForm] = useState(false);
-    const [appToEdit, setAppToEdit] = useState<any | null>(null);
-
     const handleEditSuccess = () => {
         const supabase = createClient();
         if (user) {
@@ -411,118 +408,15 @@ export default function UserDashboard() {
                 </div>
             </div>
 
-            {/* Enhanced Detail Overlay */}
-            {selectedApp && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
-                    <Card className="w-full max-w-4xl max-h-[90vh] overflow-y-auto p-0 rounded-[2rem] border-none shadow-2xl flex flex-col">
-                        <div className="sticky top-0 bg-white/80 backdrop-blur-md border-b px-8 py-5 flex justify-between items-center z-10">
-                            <div>
-                                <h2 className="text-2xl font-black text-slate-900 tracking-tight">Application Review</h2>
-                                <p className="text-sm text-zinc-500 font-medium">#{selectedApp.application_code} • {new Date(selectedApp.created_at).toLocaleDateString()}</p>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <Button
-                                    variant="outline"
-                                    className="flex items-center gap-2 rounded-xl border-blue-200 text-blue-600 hover:bg-blue-50"
-                                    onClick={() => {
-                                        setAppToEdit(selectedApp);
-                                        setShowEditForm(true);
-                                    }}
-                                >
-                                    <Edit2 className="h-4 w-4" />
-                                    Edit Info
-                                </Button>
-                                <Button variant="ghost" className="rounded-full w-10 h-10 p-0" onClick={() => setSelectedApp(null)}>
-                                    <span className="text-2xl">&times;</span>
-                                </Button>
-                            </div>
-                        </div>
-
-                        <div className="p-8 space-y-8 bg-zinc-50/50">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                {['groom', 'bride'].map((type) => {
-                                    const person = selectedApp.applicants?.find(a => a.type === type);
-                                    if (!person) return null;
-
-                                    return (
-                                        <div key={type} className="space-y-6">
-                                            <div className={`p-4 rounded-2xl border ${type === 'groom' ? 'bg-blue-50 border-blue-100 text-blue-700' : 'bg-rose-50 border-rose-100 text-rose-700'}`}>
-                                                <h3 className="text-lg font-black uppercase tracking-widest flex items-center gap-2">
-                                                    {type === 'groom' ? <div className="w-2 h-2 rounded-full bg-blue-500" /> : <div className="w-2 h-2 rounded-full bg-rose-500" />}
-                                                    {type}'s Information
-                                                </h3>
-                                            </div>
-
-                                            <div className="bg-white p-6 rounded-3xl border border-zinc-200 shadow-sm space-y-6">
-                                                {/* Personal Info */}
-                                                <section className="space-y-3">
-                                                    <h4 className="text-[10px] font-black uppercase text-zinc-400 tracking-widest border-b pb-1">Personal Details</h4>
-                                                    <div className="grid grid-cols-1 gap-3">
-                                                        <DetailItem label="Full Name" value={`${person.first_name} ${person.middle_name || ''} ${person.last_name} ${person.suffix || ''}`} />
-                                                        <div className="grid grid-cols-2 gap-3">
-                                                            <DetailItem label="Birthday" value={new Date(person.birth_date).toLocaleDateString()} />
-                                                            <DetailItem label="Age" value={person.age?.toString()} />
-                                                        </div>
-                                                        <div className="grid grid-cols-2 gap-3">
-                                                            <DetailItem label="Citizenship" value={person.citizenship} />
-                                                            <DetailItem label="Religion" value={person.religion} />
-                                                        </div>
-                                                    </div>
-                                                </section>
-
-                                                {/* Residence */}
-                                                <section className="space-y-3">
-                                                    <h4 className="text-[10px] font-black uppercase text-zinc-400 tracking-widest border-b pb-1">Current Residence</h4>
-                                                    <DetailItem
-                                                        label="Address"
-                                                        value={person.addresses ? `${person.addresses.barangay}, ${person.addresses.municipality}, ${person.addresses.province}` : 'No address provided'}
-                                                    />
-                                                </section>
-
-                                                {/* Parents info */}
-                                                <section className="space-y-3">
-                                                    <h4 className="text-[10px] font-black uppercase text-zinc-400 tracking-widest border-b pb-1">Parental Information</h4>
-                                                    <div className="space-y-3">
-                                                        <DetailItem label="Father's Name" value={person.father_name} />
-                                                        <DetailItem label="Mother's Name" value={person.mother_name} />
-                                                    </div>
-                                                </section>
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-
-                            <div className="border-t pt-6 text-center">
-                                <p className="text-xs text-zinc-400 italic">This application record is encrypted and legally binding under RA 10173.</p>
-                            </div>
-                        </div>
-                    </Card>
-                </div>
-            )}
-            {showEditForm && appToEdit && (
-                <EditApplicationModal
-                    isOpen={showEditForm}
-                    onClose={() => {
-                        setShowEditForm(false);
-                        setAppToEdit(null);
-                    }}
-                    onSuccess={handleEditSuccess}
-                    selectedApp={appToEdit}
-                />
-            )}
+            {/* Application Detail Overlay (Review only, no edit for users) */}
+            <ApplicationReviewOverlay
+                selectedApp={selectedApp}
+                onClose={() => setSelectedApp(null)}
+            />
         </div>
     );
 }
 
-function DetailItem({ label, value }: { label: string, value?: string | null }) {
-    return (
-        <div>
-            <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-tighter">{label}</p>
-            <p className="text-sm font-semibold text-zinc-900 truncate">{value || 'N/A'}</p>
-        </div>
-    );
-}
 
 function StatusBadge({ status }: { status: string }) {
     const styles: Record<string, string> = {

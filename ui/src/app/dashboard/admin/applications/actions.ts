@@ -313,7 +313,24 @@ export async function uploadApplicationPhoto(formData: FormData) {
 }
 
 export async function updateApplicationDetails(applicationId: string, formData: any) {
+    const supabase = await createClient();
     const adminSupabase = createAdminClient();
+
+    if (!supabase) return { success: false, error: "Failed to create database client" };
+
+    // Check if current user is admin or employee
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) return { success: false, error: "Not authenticated" };
+
+    const { data: profile } = await adminSupabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+    if (!profile || !(['admin', 'employee'].includes(profile.role))) {
+        return { success: false, error: "Unauthorized: Only staff can edit submitted applications." };
+    }
 
     try {
         // 1. Update marriage_applications table
