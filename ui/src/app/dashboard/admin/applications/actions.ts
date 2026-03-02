@@ -301,3 +301,98 @@ export async function uploadApplicationPhoto(formData: FormData) {
         brideName
     };
 }
+
+export async function updateApplicationDetails(applicationId: string, formData: any) {
+    const supabase = await createClient();
+    const adminSupabase = createAdminClient();
+
+    if (!supabase) return { success: false, error: "Failed to create database client" };
+
+    // Check if current user is admin or employee
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) return { success: false, error: "Not authenticated" };
+
+    const { data: profile } = await adminSupabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+    if (!profile || !(['admin', 'employee'].includes(profile.role))) {
+        return { success: false, error: "Unauthorized: Only staff can edit submitted applications." };
+    }
+
+    try {
+        // 1. Update marriage_applications table
+        const { error: appError } = await adminSupabase
+            .from("marriage_applications")
+            .update({
+                contact_number: formData.contactNumber,
+                updated_at: new Date().toISOString()
+            })
+            .eq("id", applicationId);
+
+        if (appError) throw appError;
+
+        // 2. Update applicants and their addresses
+        const types = ['groom', 'bride'] as const;
+        for (const type of types) {
+            const prefix = type === 'groom' ? 'g' : 'b';
+
+            // Get current applicant to get address_id
+            const { data: applicant, error: applicantFetchError } = await adminSupabase
+                .from("applicants")
+                .select("address_id")
+                .eq("application_id", applicationId)
+                .eq("type", type)
+                .single();
+
+            if (applicantFetchError) throw applicantFetchError;
+
+            // Update Address
+            if (applicant.address_id) {
+                const { error: addressError } = await adminSupabase
+                    .from("addresses")
+                    .update({
+                        barangay: formData[`${prefix}Brgy`],
+                        municipality: formData[`${prefix}Town`],
+                        province: formData[`${prefix}Prov`],
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq("id", applicant.address_id);
+
+                if (addressError) throw addressError;
+            }
+
+            // Update Applicant
+            const { error: updateApplicantError } = await adminSupabase
+                .from("applicants")
+                .update({
+                    first_name: formData[`${prefix}First`],
+                    middle_name: formData[`${prefix}Middle`],
+                    last_name: formData[`${prefix}Last`],
+                    suffix: formData[`${prefix}Suffix`] === "Others" ? formData[`${prefix}CustomSuffix`] : formData[`${prefix}Suffix`],
+                    birth_date: formData[`${prefix}Bday`],
+                    age: formData[`${prefix}Age`],
+                    religion: formData[`${prefix}Religion`] === "Others" ? formData[`${prefix}CustomReligion`] : formData[`${prefix}Religion`],
+                    father_name: `${formData[`${prefix}FathF`]} ${formData[`${prefix}FathM`]} ${formData[`${prefix}FathL`]}`.trim(),
+                    mother_name: `${formData[`${prefix}MothF`]} ${formData[`${prefix}MothM`]} ${formData[`${prefix}MothL`]}`.trim(),
+                    giver_name: `${formData[`${prefix}GiverF`]} ${formData[`${prefix}GiverM`]} ${formData[`${prefix}GiverL`]}`.trim(),
+                    giver_relationship: formData[`${prefix}GiverRelation`] === "Other" ? formData[`${prefix}GiverOtherTitle`] : formData[`${prefix}GiverRelation`],
+                    updated_at: new Date().toISOString()
+                })
+                .eq("application_id", applicationId)
+                .eq("type", type);
+
+            if (updateApplicantError) throw updateApplicantError;
+        }
+
+        revalidatePath("/dashboard/admin/applications");
+        revalidatePath("/dashboard/user");
+        return { success: true };
+
+    } catch (error: any) {
+        console.error("Error updating application details:", error);
+        return { success: false, error: error.message };
+    }
+}

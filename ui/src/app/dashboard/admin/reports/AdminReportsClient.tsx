@@ -20,6 +20,7 @@ import {
     AlertCircle
 } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
+import { ExportButton } from "@/components/common/ExportButton";
 
 interface Application {
     id: string;
@@ -194,6 +195,7 @@ export default function AdminReportsClient() {
         });
 
         return {
+            filteredApps,
             total: filteredApps.length,
             statusCounts,
             municipalityCounts,
@@ -342,10 +344,19 @@ export default function AdminReportsClient() {
                             Last Week
                         </Button>
                     </div>
-                    <Button variant="outline" className="rounded-xl">
-                        <Download className="mr-2 h-4 w-4" />
-                        Export Report
-                    </Button>
+                    <ExportButton
+                        data={stats.filteredApps}
+                        metadata={{
+                            generationDate: new Date().toLocaleString(),
+                            timeframe: selectedTimeframe === "all" ? "All Time" :
+                                selectedTimeframe === "month" ? "Last Month" : "Last Week",
+                            totalRecords: stats.total
+                        }}
+                        stats={stats}
+                        fileName="Marriage_License_Analytics"
+                        variant="outline"
+                        className="rounded-xl"
+                    />
                 </div>
             </div>
 
@@ -441,7 +452,7 @@ export default function AdminReportsClient() {
                     </CardHeader>
                     <CardContent className="space-y-4">
                         {Object.entries(stats.municipalityCounts)
-                            .sort(([,a], [,b]) => b - a)
+                            .sort(([, a], [, b]) => b - a)
                             .slice(0, 8)
                             .map(([municipality, count]) => (
                                 <div key={municipality} className="flex items-center justify-between">
@@ -497,7 +508,7 @@ export default function AdminReportsClient() {
                     </CardHeader>
                     <CardContent className="space-y-4">
                         {Object.entries(stats.religionCounts)
-                            .sort(([,a], [,b]) => b - a)
+                            .sort(([, a], [, b]) => b - a)
                             .slice(0, 6)
                             .map(([religion, count]) => (
                                 <div key={religion} className="flex items-center justify-between">

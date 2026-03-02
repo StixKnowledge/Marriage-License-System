@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowRight, ChevronLeft, Clock, FileText, Heart, MapPin, Phone, Scale, ShieldCheck, Trash2 } from 'lucide-react';
+import { ArrowRight, ChevronLeft, Clock, FileText, Heart, MapPin, Phone, Scale, ShieldCheck, Trash2, Edit2 } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { AddressSection } from "./components/AddressSection";
@@ -13,6 +13,7 @@ import { FamilySubSection, Field, GiverSubSection } from "./components/FormCompo
 import { SectionCard } from "./components/SectionCard";
 import { RELIGIONS } from "./constants";
 import { useMarriageForm } from "./hooks/useMarriageForm";
+import ReviewSuccessView from "./components/ReviewSuccessView";
 import { toTitleCase } from "./utils";
 import { createClient } from "@/utils/supabase/client";
 
@@ -195,7 +196,7 @@ export default function MarriageForm() {
                 <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
                     <Link href="/dashboard" className="flex items-center gap-2 text-slate-600 hover:text-primary transition-colors font-medium">
                         <ChevronLeft className="w-4 h-4" />
-                        <span>Back</span>
+                        <span>Login</span>
                     </Link>
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-primary/10 rounded-lg text-primary"><Heart className="w-5 h-5 fill-current" /></div>
@@ -501,75 +502,11 @@ export default function MarriageForm() {
                                 </form>
                             </motion.div>
                         ) : (
-                            // SUCCESS VIEW
-                            <motion.div key="success" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="max-w-2xl mx-auto">
-                                <Card className="p-12 text-center shadow-2xl border-none rounded-[2rem]">
-                                    <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-8">
-                                        <FileText className="w-10 h-10 text-green-600" />
-                                    </div>
-                                    <h2 className="text-3xl font-black text-slate-900 mb-2 tracking-tight">Application Submitted</h2>
-                                    <p className="text-slate-500 mb-8 font-medium">Your Application Code Generated</p>
-                                    <div className="bg-slate-50 px-8 py-6 rounded-3xl mb-10 border border-slate-100 shadow-inner">
-                                        <span className="text-6xl font-black text-primary tracking-tighter">{applicationCode}</span>
-                                    </div>
-
-                                    <div className="space-y-6">
-                                        <div className="bg-blue-50 border border-blue-100 rounded-[2rem] p-8 text-left shadow-sm">
-                                            <h3 className="text-blue-800 font-black tracking-tight mb-6 flex items-center gap-2 text-xl italic uppercase">
-                                                <MapPin className="w-5 h-5" /> Final Steps
-                                            </h3>
-
-                                            <div className="space-y-4">
-                                                <div className="flex gap-4 items-start bg-white/60 p-5 rounded-2xl border border-blue-100">
-                                                    <div className="w-8 h-8 rounded-full bg-blue-200 text-blue-900 flex items-center justify-center text-xs font-black shrink-0">1</div>
-                                                    <div className="space-y-0.5">
-                                                        <p className="text-slate-900 font-black text-sm uppercase tracking-tight">Save your Code</p>
-                                                        <p className="text-slate-600 text-[11px] font-bold leading-tight">Print or screenshot your 6-digit application code.</p>
-                                                    </div>
-                                                </div>
-
-                                                <div className="flex gap-4 items-start bg-white/60 p-5 rounded-2xl border border-blue-100">
-                                                    <div className="w-8 h-8 rounded-full bg-blue-200 text-blue-900 flex items-center justify-center text-xs font-black shrink-0">2</div>
-                                                    <div className="space-y-0.5">
-                                                        <p className="text-slate-900 font-black text-sm uppercase tracking-tight">Prepare Requirements</p>
-                                                        <p className="text-slate-600 text-[11px] font-bold leading-tight">Birth Certificate, CENOMAR, and Valid IDs (Original & Photocopy).</p>
-                                                    </div>
-                                                </div>
-
-                                                <div className="flex gap-4 items-start bg-white/60 p-5 rounded-2xl border border-blue-100">
-                                                    <div className="w-8 h-8 rounded-full bg-blue-200 text-blue-900 flex items-center justify-center text-xs font-black shrink-0">3</div>
-                                                    <div className="space-y-0.5">
-                                                        <p className="text-slate-900 font-black text-sm uppercase tracking-tight">Visit Solano Office</p>
-                                                        <p className="text-slate-600 text-[11px] font-bold leading-tight">Proceed to the Solano Municipal Office to finalize your application.</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div className="flex flex-col gap-4">
-                                            {user ? (
-                                                <Link href="/dashboard/user">
-                                                    <Button size="lg" className="h-16 w-full text-xl shadow-xl rounded-2xl font-bold bg-green-600 hover:bg-green-700">
-                                                        Go to My Dashboard
-                                                    </Button>
-                                                </Link>
-                                            ) : (
-                                                <Link href={`/login/signup?code=${applicationCode}`}>
-                                                    <Button size="lg" className="h-16 w-full text-xl shadow-xl rounded-2xl font-bold">
-                                                        Create Account to Track
-                                                    </Button>
-                                                </Link>
-                                            )}
-                                            <div className="flex gap-4 justify-center">
-                                                <Button onClick={generateExcel} disabled={loading} variant="ghost" className="text-slate-500">
-                                                    {loading ? "Exporting..." : "Download File (Optional)"}
-                                                </Button>
-                                                <Button variant="ghost" onClick={() => setIsSubmitted(false)} className="text-slate-500">Edit Information</Button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </Card>
-                            </motion.div>
+                            <ReviewSuccessView
+                                applicationCode={applicationCode}
+                                user={user}
+                                onEdit={() => setIsSubmitted(false)}
+                            />
                         )}
                     </AnimatePresence>
                 )}
