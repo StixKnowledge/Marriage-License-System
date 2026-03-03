@@ -10,6 +10,7 @@ import { updateApplicationStatus, deleteApplication } from "./actions";
 import PhotoCaptureModal from "@/components/PhotoCaptureModal";
 import AdminMarriageForm from "./AdminMarriageForm";
 import DeleteApplicationModal from "./components/DeleteApplicationModal";
+import AdminOnlyModal from "./components/AdminOnlyModal";
 
 import { toTitleCase, calculateAge, splitName } from "../../../marriage/utils";
 
@@ -26,13 +27,15 @@ export default function GlobalOversightClient({
     totalCount,
     totalPages,
     currentPage,
-    limit
+    limit,
+    userRole
 }: {
     apps: any[];
     totalCount: number;
     totalPages: number;
     currentPage: number;
     limit: number;
+    userRole: string | null;
 }) {
     const router = useRouter();
     const [apps, setApps] = useState<any[]>(initialApps || []);
@@ -73,6 +76,9 @@ export default function GlobalOversightClient({
     // Delete application state
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [appToDelete, setAppToDelete] = useState<any | null>(null);
+
+    // Admin only restriction modal
+    const [showAdminOnlyModal, setShowAdminOnlyModal] = useState(false);
 
     const handleRefresh = () => {
         window.location.reload();
@@ -410,6 +416,10 @@ export default function GlobalOversightClient({
                     setRowManualMessage(null);
                 }}
                 onDelete={(app) => {
+                    if (userRole !== 'admin') {
+                        setShowAdminOnlyModal(true);
+                        return;
+                    }
                     setAppToDelete(app);
                     setShowDeleteModal(true);
                 }}
@@ -525,6 +535,11 @@ export default function GlobalOversightClient({
                     applicationCode={appToDelete.application_code}
                 />
             )}
+
+            <AdminOnlyModal
+                isOpen={showAdminOnlyModal}
+                onClose={() => setShowAdminOnlyModal(false)}
+            />
         </div>
     );
 }

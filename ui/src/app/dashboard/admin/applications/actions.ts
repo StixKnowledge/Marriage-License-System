@@ -412,8 +412,32 @@ export async function updateApplicationDetails(applicationId: string, formData: 
     }
 }
 
+export async function getCurrentUserRole() {
+    const supabase = await createClient();
+    if (!supabase) return null;
+
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) return null;
+
+    const adminSupabase = createAdminClient();
+    const { data: profile, error: profileError } = await adminSupabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+    if (profileError || !profile) return null;
+
+    return profile.role;
+}
+
 export async function deleteApplication(applicationId: string) {
     console.log("deleteApplication called with:", { applicationId });
+
+    const role = await getCurrentUserRole();
+    if (role !== 'admin') {
+        return { success: false, error: "Unauthorized: Only ADMIN can delete applications." };
+    }
 
     const supabase = createAdminClient();
 
