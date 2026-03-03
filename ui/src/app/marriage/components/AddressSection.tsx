@@ -32,8 +32,14 @@ export function AddressSection({
 
     return (
         <div className="space-y-4">
-            <div className="flex items-center justify-between mb-1">
-                <label className="text-xs font-bold text-slate-600 ml-1 uppercase tracking-tight">Current Address</label>
+            <div className="flex items-center gap-2 mb-1 px-1">
+                <div className="p-1.5 rounded-lg bg-blue-100/50">
+                    <svg className="w-4 h-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                </div>
+                <label className="text-xs font-black text-slate-700 uppercase tracking-widest">Current Address</label>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-0 border-t border-slate-100">
                 <Field label="Province" required>

@@ -54,24 +54,29 @@ export function BirthPlaceSection({
 
             {sameAsAddress ? (
                 <div className="p-4 bg-primary/5 rounded-xl border border-primary/10 animate-in fade-in zoom-in-95 duration-300">
-                    <p className="text-xs font-medium text-primary/70 mb-1 flex items-center gap-2">
-                        <span className="w-1 h-1 bg-primary rounded-full" />
-                        Current Selection
+                    <p className="text-[10px] font-bold text-primary/70 mb-1 flex items-center gap-2 uppercase tracking-wider">
+                        <span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
+                        Selected Birth Place (From Current Address)
                     </p>
-                    <p className="text-sm font-bold text-slate-700">{formData[`${prefix}BirthPlace`] || "Select address first..."}</p>
+                    <p className="text-sm font-black text-slate-700">{formData[`${prefix}BirthPlace`] || "Please select Current Address first..."}</p>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-1">
                     <Field label="Birth Province">
                         <select
                             className="flex h-10 w-full rounded-md border border-input bg-white px-3 py-2 text-sm focus:ring-2 focus:ring-primary outline-none"
-                            value={provincesList.find(p => p.province_name === formData[`${prefix}BirthPlace`].split(',').pop()?.trim())?.province_code || ""}
+                            value={(() => {
+                                const parts = (formData[`${prefix}BirthPlace`] || "").split(',').map((s: string) => s.trim());
+                                const provName = parts.length > 1 ? parts.pop() : parts[0];
+                                if (!provName) return "";
+                                return provincesList.find(p => p.province_name === provName)?.province_code || "";
+                            })()}
                             onChange={(e) => {
                                 const prov = provincesList.find(p => p.province_code === e.target.value);
                                 handleBirthProvinceChange(prefix, e.target.value, prov?.province_name || "");
                             }}
                         >
-                            <option value="" disabled>Select Province</option>
+                            <option value="" disabled hidden>Select Province</option>
                             {provincesList.map((p, idx) => (
                                 <option key={`${prefix}birth-${p.province_code}-${idx}`} value={p.province_code}>
                                     {p.province_name}
@@ -83,20 +88,41 @@ export function BirthPlaceSection({
                         <select
                             className="flex h-10 w-full rounded-md border border-input bg-white px-3 py-2 text-sm disabled:opacity-50 focus:ring-2 focus:ring-primary outline-none"
                             disabled={!birthTownOptions.length}
-                            value={birthTownOptions.find(t => t.city_name === formData[`${prefix}BirthPlace`].split(',')[0]?.trim())?.city_code || ""}
+                            value={(() => {
+                                const parts = (formData[`${prefix}BirthPlace`] || "").split(',').map((s: string) => s.trim());
+                                if (parts.length < 2) return "";
+                                const cityName = parts[0];
+                                return birthTownOptions.find(t => t.city_name === cityName)?.city_code || "";
+                            })()}
                             onChange={(e) => {
                                 const town = birthTownOptions.find(t => t.city_code === e.target.value);
-                                const parts = formData[`${prefix}BirthPlace`].split(',');
-                                const prov = parts[parts.length - 1]?.trim() || "";
-                                handleBirthTownChange(prefix, e.target.value, town?.city_name || "", prov);
+                                const parts = (formData[`${prefix}BirthPlace`] || "").split(',').map((s: string) => s.trim());
+                                const prov = parts.length > 1 ? parts.pop() : parts[0];
+                                handleBirthTownChange(prefix, e.target.value, town?.city_name || "", prov || "");
                             }}
                         >
-                            <option value="" disabled>Select Town</option>
+                            <option value="" disabled hidden>Select Town</option>
                             {birthTownOptions.map(t => (
                                 <option key={t.city_code} value={t.city_code}>{t.city_name}</option>
                             ))}
                         </select>
                     </Field>
+                    <div className="md:col-span-2 flex justify-end">
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setSameAsAddress(true);
+                                const place = `${formData[`${prefix}Town`]}, ${formData[`${prefix}Prov`]}`;
+                                setFormData((prev: any) => ({ ...prev, [`${prefix}BirthPlace`]: place }));
+                            }}
+                            className="text-[9px] font-black text-primary hover:text-primary/80 flex items-center gap-1 uppercase tracking-widest bg-primary/5 px-3 py-1.5 rounded-full transition-all border border-primary/10 hover:border-primary/20"
+                        >
+                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                            </svg>
+                            Back to Current Address
+                        </button>
+                    </div>
                 </div>
             )}
         </div>

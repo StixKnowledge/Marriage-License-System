@@ -126,7 +126,10 @@ export function useMarriageForm() {
             }
         };
 
-        if ((formData.gBirthPlace && gBirthTownOptions.length === 0) || (formData.bBirthPlace && bBirthTownOptions.length === 0)) {
+        if (formData.gBirthPlace && gBirthTownOptions.length === 0) {
+            initializeBirthOptions();
+        }
+        if (formData.bBirthPlace && bBirthTownOptions.length === 0) {
             initializeBirthOptions();
         }
     }, [formData.gProv, formData.gTown, formData.bProv, formData.bTown, formData.gBirthPlace, formData.bBirthPlace, provincesList.length]);
