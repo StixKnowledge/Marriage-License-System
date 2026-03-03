@@ -21,8 +21,6 @@ export function useMarriageForm() {
     // Birth Place Options
     const [gBirthTownOptions, setGBirthTownOptions] = useState<any[]>([]);
     const [bBirthTownOptions, setBBirthTownOptions] = useState<any[]>([]);
-    const [gBirthBrgyOptions, setGBirthBrgyOptions] = useState<any[]>([]);
-    const [bBirthBrgyOptions, setBBirthBrgyOptions] = useState<any[]>([]);
 
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [applicationCode, setApplicationCode] = useState("");
@@ -151,7 +149,7 @@ export function useMarriageForm() {
             if (isSame) {
                 const town = newData[`${prefix}Town`];
                 const prov = newData[`${prefix}Prov`];
-                newData[`${prefix}BirthPlace`] = `${brgyName}, ${town}, ${prov}`;
+                newData[`${prefix}BirthPlace`] = `${town}, ${prov}`;
             }
 
             return newData;
@@ -162,18 +160,14 @@ export function useMarriageForm() {
         const res = await cities(provinceCode);
         if (prefix === 'g') {
             setGBirthTownOptions(res);
-            setGBirthBrgyOptions([]);
         } else {
             setBBirthTownOptions(res);
-            setBBirthBrgyOptions([]);
         }
         setFormData(prev => ({ ...prev, [`${prefix}BirthPlace`]: provinceName }));
     };
 
     const handleBirthTownChange = async (prefix: 'g' | 'b', cityCode: string, cityName: string, provinceName: string) => {
-        const res = await barangays(cityCode);
-        if (prefix === 'g') setGBirthBrgyOptions(res);
-        else setBBirthBrgyOptions(res);
+        // No more birth barangay logic
 
         setFormData(prev => ({ ...prev, [`${prefix}BirthPlace`]: `${cityName}, ${provinceName}` }));
     };
@@ -188,7 +182,7 @@ export function useMarriageForm() {
             return;
         }
 
-        const fullAddress = `${brgy}, ${town}, ${prov}`;
+        const fullAddress = `${town}, ${prov}`;
         setFormData(prev => ({ ...prev, [`${prefix}BirthPlace`]: fullAddress }));
     };
 
@@ -296,8 +290,6 @@ export function useMarriageForm() {
         bBrgyOptions,
         gBirthTownOptions,
         bBirthTownOptions,
-        gBirthBrgyOptions,
-        bBirthBrgyOptions,
         isSubmitted,
         setIsSubmitted,
         applicationCode,
