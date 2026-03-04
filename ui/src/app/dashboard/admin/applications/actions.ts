@@ -4,24 +4,44 @@ import { createClient, createAdminClient } from "@/utils/supabase/server-utils";
 import { revalidatePath } from "next/cache";
 import { handleImageReplace } from "@/utils/supabase/storage-utils";
 
-export async function getAllApplications(page: number = 1, limit: number = 50) {
+export async function getAllApplications(page: number = 1, limit: number = 50, statusFilter?: string) {
     const supabase = createAdminClient();
 
     const offset = (page - 1) * limit;
 
-    // Get total count first
-    const { count: totalCount, error: countError } = await supabase
+    // Get counts for all categories for the tabs
+    const { data: countData, error: countError } = await supabase
         .from("marriage_applications")
-        .select("*", { count: "exact", head: true });
+        .select("status");
 
     if (countError) {
-        console.error("Error getting total count:", countError);
-        return { apps: [], totalCount: 0, totalPages: 0 };
+        console.error("Error getting counts:", countError);
     }
 
-    // Get paginated data
-    const { data: apps, error } = await supabase
-        .from("marriage_applications")
+    const allCounts = { pending: 0, approved: 0, completed: 0, rejected: 0 };
+    if (countData) {
+        countData.forEach(row => {
+            const s = (row.status || 'pending').toLowerCase();
+            if (s === "pending" || s === "submitted" || s === "processing" || s === "draft") allCounts.pending++;
+            else if (s === "approved") allCounts.approved++;
+            else if (s === "completed") allCounts.completed++;
+            else if (s === "rejected") allCounts.rejected++;
+        });
+    }
+
+    let query = supabase.from("marriage_applications").select("*", { count: "exact" });
+
+    // Handle status filtering
+    if (statusFilter && statusFilter !== 'all') {
+        if (statusFilter === 'pending') {
+            query = query.in('status', ['pending', 'submitted', 'processing', 'draft']);
+        } else {
+            query = query.eq('status', statusFilter);
+        }
+    }
+
+    // Get table data with count
+    const { data: apps, count: totalCount, error } = await query
         .select(`
             *,
             submitter:profiles!created_by(full_name),
@@ -61,7 +81,7 @@ export async function getAllApplications(page: number = 1, limit: number = 50) {
             ),
             application_photos (id)
         `)
-        .order("created_at", { ascending: false })
+        .order("created_at", { ascending: true })
         .range(offset, offset + limit - 1);
 
     if (error) {
@@ -98,7 +118,8 @@ export async function getAllApplications(page: number = 1, limit: number = 50) {
         totalCount: totalCount || 0,
         totalPages,
         currentPage: page,
-        limit
+        limit,
+        allCounts
     };
 }
 
