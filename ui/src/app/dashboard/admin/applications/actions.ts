@@ -18,8 +18,9 @@ export async function getAllApplications(page: number = 1, limit: number = 50, s
         console.error("Error getting counts:", countError);
     }
 
-    const allCounts = { pending: 0, approved: 0, completed: 0, rejected: 0 };
+    const allCounts = { all: 0, pending: 0, approved: 0, completed: 0, rejected: 0 };
     if (countData) {
+        allCounts.all = countData.length;
         countData.forEach(row => {
             const s = (row.status || 'pending').toLowerCase();
             if (s === "pending" || s === "submitted" || s === "processing" || s === "draft") allCounts.pending++;
@@ -251,6 +252,25 @@ export async function updateRegistryNumber(applicationId: string, registryCode: 
     // Get current year
     const year = new Date().getFullYear();
     const fullRegistryNumber = `${year}-${registryCode}`;
+
+    // Check if registry number already exists
+    const { data: existingApp, error: checkError } = await supabase
+        .from("marriage_applications")
+        .select("application_code")
+        .eq("registry_number", fullRegistryNumber)
+        .neq("id", applicationId)
+        .maybeSingle();
+
+    if (checkError) {
+        console.error("Error checking for duplicate registry number:", checkError);
+    }
+
+    if (existingApp) {
+        return {
+            success: false,
+            error: `Registry Number "${fullRegistryNumber}" is already assigned to application ${existingApp.application_code}. Please use a different code.`
+        };
+    }
 
     // Update registry number and mark as completed
     const { data, error } = await supabase

@@ -38,7 +38,7 @@ export default function GlobalOversightClient({
     currentPage: number;
     limit: number;
     userRole: string | null;
-    allCounts: { pending: number, approved: number, completed: number, rejected: number };
+    allCounts: { all: number, pending: number, approved: number, completed: number, rejected: number };
     initialStatus?: string;
 }) {
     const router = useRouter();
@@ -59,7 +59,7 @@ export default function GlobalOversightClient({
     useEffect(() => {
         setActiveTab(initialStatus);
     }, [initialStatus]);
-    const [counts, setCounts] = useState(initialCounts || { pending: 0, approved: 0, completed: 0, rejected: 0 });
+    const [counts, setCounts] = useState(initialCounts || { all: 0, pending: 0, approved: 0, completed: 0, rejected: 0 });
 
     useEffect(() => {
         if (initialCounts) setCounts(initialCounts);
@@ -338,6 +338,7 @@ export default function GlobalOversightClient({
 
         // Note: Server already filters by status, but we keep this for immediate local updates
         result = result.filter(app => {
+            if (activeTab === 'all') return true;
             const status = (app.status || 'pending').toLowerCase();
             if (activeTab === "pending") {
                 return status === "pending" || status === "submitted" || status === "processing" || status === "draft";
@@ -381,8 +382,9 @@ export default function GlobalOversightClient({
                 </div>
 
                 {/* ── Status Tabs ── */}
-                <div className="flex p-1.5 bg-zinc-100 rounded-[2rem] w-fit border border-zinc-200 shadow-inner">
+                <div className="flex p-1.5 bg-zinc-100 rounded-[2rem] w-fit border border-zinc-200 shadow-inner overflow-x-auto no-scrollbar">
                     {[
+                        { id: 'all', label: 'All', count: counts.all, color: 'text-zinc-600', bg: 'bg-zinc-200' },
                         { id: 'pending', label: 'Pending', count: counts.pending, color: 'text-amber-600', bg: 'bg-amber-100' },
                         { id: 'approved', label: 'Approve', count: counts.approved, color: 'text-emerald-600', bg: 'bg-emerald-100' },
                         { id: 'completed', label: 'Complete', count: counts.completed, color: 'text-blue-600', bg: 'bg-blue-100' },
