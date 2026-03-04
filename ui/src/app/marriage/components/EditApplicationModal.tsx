@@ -14,6 +14,7 @@ import { AddressSection } from "./AddressSection";
 import { BirthPlaceSection } from "./BirthPlaceSection";
 import { FamilySubSection, Field, GiverSubSection } from "./FormComponents";
 import { SectionCard } from "./SectionCard";
+import { COUNTRY_OPTIONS } from "@/utils/countries";
 
 interface EditApplicationModalProps {
     isOpen: boolean;
@@ -182,6 +183,28 @@ export default function EditApplicationModal({ isOpen, onClose, onSuccess, selec
                                         </select>
                                     </Field>
                                 </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <Field label="Nationality">
+                                        <Input
+                                            placeholder="e.g. Filipino"
+                                            className="bg-white"
+                                            value={formData.gCitizen}
+                                            onChange={e => setFormData({ ...formData, gCitizen: toTitleCase(e.target.value) })}
+                                        />
+                                    </Field>
+                                    <Field label="Country">
+                                        <select
+                                            className="flex h-10 w-full rounded-md border border-input bg-white px-3 py-2 text-sm focus:ring-2 focus:ring-primary outline-none"
+                                            value={formData.gCountry}
+                                            onChange={(e) => setFormData({ ...formData, gCountry: e.target.value })}
+                                        >
+                                            <option value="" disabled hidden>Select Country</option>
+                                            {COUNTRY_OPTIONS.map((c) => (
+                                                <option key={`g-country-${c}`} value={c}>{c}</option>
+                                            ))}
+                                        </select>
+                                    </Field>
+                                </div>
                                 <AnimatePresence>
                                     {formData.gReligion === "Others" && (
                                         <motion.div
@@ -202,8 +225,8 @@ export default function EditApplicationModal({ isOpen, onClose, onSuccess, selec
                                         </motion.div>
                                     )}
                                 </AnimatePresence>
-                                <AddressSection prefix="g" provincesList={provincesList} gTownOptions={gTownOptions} bTownOptions={bTownOptions} brgyOptions={gBrgyOptions} formData={formData} handleProvinceChange={handleProvinceChange} handleTownChange={handleTownChange} handleBrgyChange={handleBrgyChange} />
-                                <BirthPlaceSection prefix="g" sameAsAddress={gSameAsAddress} setSameAsAddress={setGSameAsAddress} formData={formData} setFormData={setFormData} provincesList={provincesList} birthTownOptions={gBirthTownOptions} handleBirthProvinceChange={handleBirthProvinceChange} handleBirthTownChange={handleBirthTownChange} />
+                                <AddressSection prefix="g" provincesList={provincesList} gTownOptions={gTownOptions} bTownOptions={bTownOptions} brgyOptions={gBrgyOptions} formData={formData} setFormData={setFormData} handleProvinceChange={handleProvinceChange} handleTownChange={handleTownChange} handleBrgyChange={handleBrgyChange} />
+                                <BirthPlaceSection prefix="g" sameAsAddress={gSameAsAddress} setSameAsAddress={setGSameAsAddress} formData={formData} setFormData={setFormData} provincesList={provincesList} birthTownOptions={gBirthTownOptions} countryOptions={COUNTRY_OPTIONS} handleBirthProvinceChange={handleBirthProvinceChange} handleBirthTownChange={handleBirthTownChange} />
                                 <FamilySubSection prefix="g" person="Groom" data={formData} setData={setFormData} toTitleCase={toTitleCase} />
                                 <GiverSubSection prefix="g" age={formData.gAge} data={formData} setData={setFormData} toTitleCase={toTitleCase} />
                             </SectionCard>
@@ -271,6 +294,28 @@ export default function EditApplicationModal({ isOpen, onClose, onSuccess, selec
                                         </select>
                                     </Field>
                                 </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <Field label="Nationality">
+                                        <Input
+                                            placeholder="e.g. Filipino"
+                                            className="bg-white"
+                                            value={formData.bCitizen}
+                                            onChange={e => setFormData({ ...formData, bCitizen: toTitleCase(e.target.value) })}
+                                        />
+                                    </Field>
+                                    <Field label="Country">
+                                        <select
+                                            className="flex h-10 w-full rounded-md border border-input bg-white px-3 py-2 text-sm focus:ring-2 focus:ring-primary outline-none"
+                                            value={formData.bCountry}
+                                            onChange={(e) => setFormData({ ...formData, bCountry: e.target.value })}
+                                        >
+                                            <option value="" disabled hidden>Select Country</option>
+                                            {COUNTRY_OPTIONS.map((c) => (
+                                                <option key={`b-country-${c}`} value={c}>{c}</option>
+                                            ))}
+                                        </select>
+                                    </Field>
+                                </div>
                                 <AnimatePresence>
                                     {formData.bReligion === "Others" && (
                                         <motion.div
@@ -291,8 +336,8 @@ export default function EditApplicationModal({ isOpen, onClose, onSuccess, selec
                                         </motion.div>
                                     )}
                                 </AnimatePresence>
-                                <AddressSection prefix="b" provincesList={provincesList} gTownOptions={gTownOptions} bTownOptions={bTownOptions} brgyOptions={bBrgyOptions} formData={formData} handleProvinceChange={handleProvinceChange} handleTownChange={handleTownChange} handleBrgyChange={handleBrgyChange} />
-                                <BirthPlaceSection prefix="b" sameAsAddress={bSameAsAddress} setSameAsAddress={setBSameAsAddress} formData={formData} setFormData={setFormData} provincesList={provincesList} birthTownOptions={bBirthTownOptions} handleBirthProvinceChange={handleBirthProvinceChange} handleBirthTownChange={handleBirthTownChange} />
+                                <AddressSection prefix="b" provincesList={provincesList} gTownOptions={gTownOptions} bTownOptions={bTownOptions} brgyOptions={bBrgyOptions} formData={formData} setFormData={setFormData} handleProvinceChange={handleProvinceChange} handleTownChange={handleTownChange} handleBrgyChange={handleBrgyChange} />
+                                <BirthPlaceSection prefix="b" sameAsAddress={bSameAsAddress} setSameAsAddress={setBSameAsAddress} formData={formData} setFormData={setFormData} provincesList={provincesList} birthTownOptions={bBirthTownOptions} countryOptions={COUNTRY_OPTIONS} handleBirthProvinceChange={handleBirthProvinceChange} handleBirthTownChange={handleBirthTownChange} />
                                 <FamilySubSection prefix="b" person="Bride" data={formData} setData={setFormData} toTitleCase={toTitleCase} />
                                 <GiverSubSection prefix="b" age={formData.bAge} data={formData} setData={setFormData} toTitleCase={toTitleCase} />
                             </SectionCard>

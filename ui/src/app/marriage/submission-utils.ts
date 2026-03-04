@@ -32,6 +32,7 @@ export async function submitApplication(formData: any, generatedCode: string, us
             barangay: formData.gBrgy,
             province: formData.gProv,
             municipality: formData.gTown,
+            country: formData.gCountry || "Philippines",
         };
 
         console.log('Inserting groom address:', groomAddressPayload);
@@ -57,6 +58,7 @@ export async function submitApplication(formData: any, generatedCode: string, us
             barangay: formData.bBrgy,
             province: formData.bProv,
             municipality: formData.bTown,
+            country: formData.bCountry || "Philippines",
         };
 
         console.log('Inserting bride address:', brideAddressPayload);

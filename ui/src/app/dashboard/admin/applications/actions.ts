@@ -51,7 +51,8 @@ export async function getAllApplications(page: number = 1, limit: number = 50) {
                 addresses (
                     barangay,
                     municipality,
-                    province
+                    province,
+                    country
                 )
             )
         `)
@@ -364,6 +365,7 @@ export async function updateApplicationDetails(applicationId: string, formData: 
                         barangay: formData[`${prefix}Brgy`],
                         municipality: formData[`${prefix}Town`],
                         province: formData[`${prefix}Prov`],
+                        country: formData[`${prefix}Country`] || "Philippines",
                         updated_at: new Date().toISOString()
                     })
                     .eq("id", applicant.address_id);
@@ -381,6 +383,7 @@ export async function updateApplicationDetails(applicationId: string, formData: 
                     suffix: formData[`${prefix}Suffix`] === "Others" ? formData[`${prefix}CustomSuffix`] : formData[`${prefix}Suffix`],
                     birth_date: formData[`${prefix}Bday`],
                     age: formData[`${prefix}Age`],
+                    citizenship: formData[`${prefix}Citizen`] ?? null,
                     birth_place: formData[`${prefix}BirthPlace`],
                     religion: formData[`${prefix}Religion`] === "Others" ? formData[`${prefix}CustomReligion`] : formData[`${prefix}Religion`],
                     father_name: `${formData[`${prefix}FathF`]} ${formData[`${prefix}FathM`]} ${formData[`${prefix}FathL`]}`.trim(),

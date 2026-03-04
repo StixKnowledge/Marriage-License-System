@@ -8,6 +8,7 @@ export interface ExcelData {
     gBday: string;
     gAge: number;
     gBirthPlace?: string;
+    gBirthCountry?: string;
     gTown: string;
     gProv: string;
     gBrgy: string;
@@ -53,6 +54,7 @@ export interface ExcelData {
     bBday: string;
     bAge: number;
     bBirthPlace?: string;
+    bBirthCountry?: string;
     bTown: string;
     bProv: string;
     bBrgy: string;

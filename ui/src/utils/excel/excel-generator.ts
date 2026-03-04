@@ -111,9 +111,11 @@ export class ExcelGenerator {
             appSheet.getCell('B12').value = this.sanitize(data.gBirthPlace || "");
 
             const gCountryVal = this.sanitize(data.gCountry) || 'Philippines';
-            appSheet.getCell('L12').value = gCountryVal;
+            const gBirthCountryVal = this.sanitize(data.gBirthCountry || data.gCountry) || 'Philippines';
+            appSheet.getCell('L12').value = gBirthCountryVal;
             appSheet.getCell('B13').value = "Male";
-            appSheet.getCell('H13').value = this.sanitize(data.gCitizen) || 'Filipino';
+            appSheet.getCell('H13').value = this.sanitize(data.gCitizen || "");
+            appSheet.getCell('B14').value = "Current Address";
             appSheet.getCell('B15').value = this.sanitize(gFullAddr);
             appSheet.getCell('M15').value = gCountryVal;
             const gFullRel = data.gReligion === "Others" ? data.gCustomReligion : data.gReligion;
@@ -161,9 +163,11 @@ export class ExcelGenerator {
             appSheet.getCell('U12').value = this.sanitize(data.bBirthPlace || "");
 
             const bCountryVal = this.sanitize(data.bCountry) || 'Philippines';
-            appSheet.getCell('AE12').value = bCountryVal;
+            const bBirthCountryVal = this.sanitize(data.bBirthCountry || data.bCountry) || 'Philippines';
+            appSheet.getCell('AE12').value = bBirthCountryVal;
             appSheet.getCell('U13').value = "Female";
-            appSheet.getCell('Z13').value = this.sanitize(data.bCitizen) || 'Filipino';
+            appSheet.getCell('Z13').value = this.sanitize(data.bCitizen || "");
+            appSheet.getCell('U14').value = "Current Address";
             appSheet.getCell('U15').value = this.sanitize(bFullAddr);
             appSheet.getCell('AF15').value = bCountryVal;
             const bFullRel = data.bReligion === "Others" ? data.bCustomReligion : data.bReligion;

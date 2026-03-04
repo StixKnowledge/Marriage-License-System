@@ -1,4 +1,5 @@
 import { Field } from "./FormComponents";
+import { Input } from "@/components/ui/input";
 
 interface BirthPlaceSectionProps {
     prefix: 'g' | 'b';
@@ -8,6 +9,7 @@ interface BirthPlaceSectionProps {
     setFormData: (data: any) => void;
     provincesList: any[];
     birthTownOptions: any[];
+    countryOptions: string[];
     handleBirthProvinceChange: (prefix: 'g' | 'b', provinceCode: string, provinceName: string) => void;
     handleBirthTownChange: (prefix: 'g' | 'b', cityCode: string, cityName: string, provinceName: string) => void;
 }
@@ -20,6 +22,7 @@ export function BirthPlaceSection({
     setFormData,
     provincesList,
     birthTownOptions,
+    countryOptions,
     handleBirthProvinceChange,
     handleBirthTownChange
 }: BirthPlaceSectionProps) {
@@ -42,7 +45,8 @@ export function BirthPlaceSection({
                     onClick={() => {
                         setSameAsAddress(true);
                         const place = `${formData[`${prefix}Town`]}, ${formData[`${prefix}Prov`]}`;
-                        setFormData((prev: any) => ({ ...prev, [`${prefix}BirthPlace`]: place }));
+                        const country = formData[`${prefix}Country`] || "Philippines";
+                        setFormData((prev: any) => ({ ...prev, [`${prefix}BirthPlace`]: place, [`${prefix}BirthCountry`]: country }));
                     }}
                     className={`flex-1 py-2 text-[10px] font-black rounded-lg transition-all flex items-center justify-center gap-2 ${sameAsAddress ? 'bg-white shadow-md text-primary' : 'text-slate-400 hover:text-slate-600'}`}
                 >
@@ -53,7 +57,7 @@ export function BirthPlaceSection({
                     type="button"
                     onClick={() => {
                         setSameAsAddress(false);
-                        setFormData((prev: any) => ({ ...prev, [`${prefix}BirthPlace`]: "" }));
+                        setFormData((prev: any) => ({ ...prev, [`${prefix}BirthPlace`]: "", [`${prefix}BirthCountry`]: "Philippines" }));
                     }}
                     className={`flex-1 py-2 text-[10px] font-black rounded-lg transition-all flex items-center justify-center gap-2 ${!sameAsAddress ? 'bg-white shadow-md text-primary' : 'text-slate-400 hover:text-slate-600'}`}
                 >
@@ -69,68 +73,130 @@ export function BirthPlaceSection({
                         Selected Birth Place (From Current Address)
                     </p>
                     <p className="text-sm font-black text-slate-700">{formData[`${prefix}BirthPlace`] || "Please select Current Address first..."}</p>
+                    <p className="text-xs text-slate-500 mt-1">Country: {formData[`${prefix}BirthCountry`] || formData[`${prefix}Country`] || "Philippines"}</p>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-1">
-                    <Field label="Birth Province">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-in fade-in slide-in-from-top-1">
+                    <Field label="Birth Country">
                         <select
                             className="flex h-10 w-full rounded-md border border-input bg-white px-3 py-2 text-sm focus:ring-2 focus:ring-primary outline-none"
-                            value={(() => {
-                                const fullBirth = (formData[`${prefix}BirthPlace`] ?? "").toString().trim();
-                                if (!fullBirth) return "";
-                                const parts = fullBirth.split(',').map((s: string) => s.trim());
-                                const provName = parts.length > 1 ? parts[parts.length - 1] : parts[0];
-                                if (!provName) return "";
-                                const found = provincesList.find(p => (p.province_name || "").trim() === provName);
-                                return found ? found.province_code : "";
-                            })()}
-                            onChange={(e) => {
-                                const val = e.target.value;
-                                if (val === "" || val == null) return;
-                                const prov = provincesList.find(p => p.province_code === val);
-                                handleBirthProvinceChange(prefix, val, prov?.province_name || "");
-                            }}
+                            value={formData[`${prefix}BirthCountry`] || "Philippines"}
+                            onChange={(e) => setFormData((prev: any) => ({ ...prev, [`${prefix}BirthCountry`]: e.target.value || "Philippines" }))}
                         >
-                            <option value="" disabled hidden>Select Province</option>
-                            {provincesList.map((p, idx) => (
-                                <option key={`${prefix}birth-${p.province_code}-${idx}`} value={p.province_code}>
-                                    {p.province_name}
-                                </option>
+                            <option value="" disabled hidden>Select Country</option>
+                            {countryOptions.map((c) => (
+                                <option key={`${prefix}birth-country-${c}`} value={c}>{c}</option>
                             ))}
                         </select>
                     </Field>
-                    <Field label="Birth Town/Municipality">
-                        <select
-                            className="flex h-10 w-full rounded-md border border-input bg-white px-3 py-2 text-sm disabled:opacity-50 focus:ring-2 focus:ring-primary outline-none"
-                            disabled={!birthTownOptions.length}
-                            value={(() => {
-                                const fullBirth = (formData[`${prefix}BirthPlace`] ?? "").toString().trim();
-                                if (!fullBirth) return "";
-                                const parts = fullBirth.split(',').map((s: string) => s.trim());
-                                if (parts.length < 2) return "";
-                                const cityName = parts[0];
-                                const found = birthTownOptions.find(t => {
-                                    const n1 = (t.city_name || "").toLowerCase().replace(/\(capital\)/gi, "").trim();
-                                    const n2 = cityName.toLowerCase().replace(/\(capital\)/gi, "").trim();
-                                    return n1 === n2;
-                                });
-                                return found ? found.city_code : "";
-                            })()}
-                            onChange={(e) => {
-                                const val = e.target.value;
-                                if (val === "" || val == null) return;
-                                const town = birthTownOptions.find(t => t.city_code === val);
-                                const parts = (formData[`${prefix}BirthPlace`] || "").split(',').map((s: string) => s.trim());
-                                const provName = parts.length > 1 ? parts[parts.length - 1] : parts[0];
-                                handleBirthTownChange(prefix, val, town?.city_name || "", provName || "");
-                            }}
-                        >
-                            <option value="" disabled hidden>Select Town</option>
-                            {birthTownOptions.map(t => (
-                                <option key={t.city_code} value={t.city_code}>{t.city_name}</option>
-                            ))}
-                        </select>
-                    </Field>
+                    {(formData[`${prefix}BirthCountry`] || "Philippines") === "Philippines" ? (
+                        <>
+                            <Field label="Birth Province">
+                                <select
+                                    className="flex h-10 w-full rounded-md border border-input bg-white px-3 py-2 text-sm focus:ring-2 focus:ring-primary outline-none"
+                                    value={(() => {
+                                        const fullBirth = (formData[`${prefix}BirthPlace`] ?? "").toString().trim();
+                                        if (!fullBirth) return "";
+                                        const parts = fullBirth.split(',').map((s: string) => s.trim());
+                                        const provName = parts.length > 1 ? parts[parts.length - 1] : parts[0];
+                                        if (!provName) return "";
+                                        const found = provincesList.find(p => (p.province_name || "").trim() === provName);
+                                        return found ? found.province_code : "";
+                                    })()}
+                                    onChange={(e) => {
+                                        const val = e.target.value;
+                                        if (val === "" || val == null) return;
+                                        const prov = provincesList.find(p => p.province_code === val);
+                                        handleBirthProvinceChange(prefix, val, prov?.province_name || "");
+                                    }}
+                                >
+                                    <option value="" disabled hidden>Select Province</option>
+                                    {provincesList.map((p, idx) => (
+                                        <option key={`${prefix}birth-${p.province_code}-${idx}`} value={p.province_code}>
+                                            {p.province_name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </Field>
+                            <Field label="Birth Town/Municipality">
+                                <select
+                                    className="flex h-10 w-full rounded-md border border-input bg-white px-3 py-2 text-sm disabled:opacity-50 focus:ring-2 focus:ring-primary outline-none"
+                                    disabled={!birthTownOptions.length}
+                                    value={(() => {
+                                        const fullBirth = (formData[`${prefix}BirthPlace`] ?? "").toString().trim();
+                                        if (!fullBirth) return "";
+                                        const parts = fullBirth.split(',').map((s: string) => s.trim());
+                                        if (parts.length < 2) return "";
+                                        const cityName = parts[0];
+                                        const found = birthTownOptions.find(t => {
+                                            const n1 = (t.city_name || "").toLowerCase().replace(/\(capital\)/gi, "").trim();
+                                            const n2 = cityName.toLowerCase().replace(/\(capital\)/gi, "").trim();
+                                            return n1 === n2;
+                                        });
+                                        return found ? found.city_code : "";
+                                    })()}
+                                    onChange={(e) => {
+                                        const val = e.target.value;
+                                        if (val === "" || val == null) return;
+                                        const town = birthTownOptions.find(t => t.city_code === val);
+                                        const parts = (formData[`${prefix}BirthPlace`] || "").split(',').map((s: string) => s.trim());
+                                        const provName = parts.length > 1 ? parts[parts.length - 1] : parts[0];
+                                        handleBirthTownChange(prefix, val, town?.city_name || "", provName || "");
+                                    }}
+                                >
+                                    <option value="" disabled hidden>Select Town</option>
+                                    {birthTownOptions.map(t => (
+                                        <option key={t.city_code} value={t.city_code}>{t.city_name}</option>
+                                    ))}
+                                </select>
+                            </Field>
+                        </>
+                    ) : (
+                        <>
+                            <Field label="Birth Province">
+                                <Input
+                                    placeholder="Type province/state"
+                                    className="bg-white"
+                                    value={(() => {
+                                        const fullBirth = (formData[`${prefix}BirthPlace`] ?? "").toString().trim();
+                                        if (!fullBirth) return "";
+                                        const parts = fullBirth.split(',').map((s: string) => s.trim());
+                                        return parts.length > 1 ? parts[parts.length - 1] : parts[0] || "";
+                                    })()}
+                                    onChange={(e) => {
+                                        const prov = e.target.value.trim();
+                                        const parts = (formData[`${prefix}BirthPlace`] || "").split(',').map((s: string) => s.trim());
+                                        const town = parts.length >= 2 ? parts[0] : "";
+                                        setFormData((prev: any) => ({
+                                            ...prev,
+                                            [`${prefix}BirthPlace`]: town ? `${town}, ${prov}` : prov,
+                                        }));
+                                    }}
+                                />
+                            </Field>
+                            <Field label="Birth Town/Municipality">
+                                <Input
+                                    placeholder="Type town/municipality"
+                                    className="bg-white"
+                                    value={(() => {
+                                        const fullBirth = (formData[`${prefix}BirthPlace`] ?? "").toString().trim();
+                                        if (!fullBirth) return "";
+                                        const parts = fullBirth.split(',').map((s: string) => s.trim());
+                                        return parts[0] || "";
+                                    })()}
+                                    onChange={(e) => {
+                                        const town = e.target.value.trim();
+                                        const parts = (formData[`${prefix}BirthPlace`] || "").split(',').map((s: string) => s.trim());
+                                        const prov = parts.length > 1 ? parts[parts.length - 1] : parts[0] || "";
+                                        setFormData((prev: any) => ({
+                                            ...prev,
+                                            [`${prefix}BirthPlace`]: prov ? `${town}, ${prov}` : town,
+                                        }));
+                                    }}
+                                />
+                            </Field>
+                        </>
+                    )}
                 </div>
             )}
         </div>
