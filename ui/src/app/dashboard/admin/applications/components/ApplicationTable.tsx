@@ -13,6 +13,7 @@ interface ApplicationTableProps {
     updatingId: string | null;
     downloadingId: string | null;
     onDelete: (app: any) => void;
+    onRestore: (appId: string) => void;
     onRefresh: () => void;
 }
 
@@ -25,6 +26,7 @@ export default function ApplicationTable({
     updatingId,
     downloadingId,
     onDelete,
+    onRestore,
     onRefresh
 }: ApplicationTableProps) {
     return (
@@ -97,6 +99,7 @@ export default function ApplicationTable({
                                     onManualUpdate={onManualUpdate}
                                     onRegistry={onRegistry}
                                     onDelete={onDelete}
+                                    onRestore={onRestore}
                                     isUpdating={updatingId === app.id}
                                     isDownloading={downloadingId === app.id}
                                 />
@@ -175,6 +178,7 @@ export default function ApplicationTable({
                                             onManualUpdate={onManualUpdate}
                                             onRegistry={onRegistry}
                                             onDelete={onDelete}
+                                            onRestore={onRestore}
                                             isUpdating={updatingId === app.id}
                                             isDownloading={downloadingId === app.id}
                                         />

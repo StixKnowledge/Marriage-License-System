@@ -6,7 +6,7 @@ import {
     FileText, Search, ChevronLeft, ChevronRight, AlertCircle, CheckCircle2, Loader2, X
 } from "lucide-react";
 import { Alert } from "@/components/ui/alert";
-import { updateApplicationStatus, deleteApplication, updateRegistryNumber } from "./actions";
+import { updateApplicationStatus, deleteApplication, updateRegistryNumber, restoreApplication } from "./actions";
 import PhotoCaptureModal from "@/components/PhotoCaptureModal";
 import AdminMarriageForm from "./AdminMarriageForm";
 import DeleteApplicationModal from "./components/DeleteApplicationModal";
@@ -38,7 +38,7 @@ export default function GlobalOversightClient({
     currentPage: number;
     limit: number;
     userRole: string | null;
-    allCounts: { all: number, pending: number, approved: number, completed: number, rejected: number };
+    allCounts: { all: number, pending: number, approved: number, completed: number, rejected: number, deleted: number };
     initialStatus?: string;
 }) {
     const router = useRouter();
@@ -59,7 +59,7 @@ export default function GlobalOversightClient({
     useEffect(() => {
         setActiveTab(initialStatus);
     }, [initialStatus]);
-    const [counts, setCounts] = useState(initialCounts || { all: 0, pending: 0, approved: 0, completed: 0, rejected: 0 });
+    const [counts, setCounts] = useState(initialCounts || { all: 0, pending: 0, approved: 0, completed: 0, rejected: 0, deleted: 0 });
 
     useEffect(() => {
         if (initialCounts) setCounts(initialCounts);
@@ -154,8 +154,18 @@ export default function GlobalOversightClient({
         try {
             const result = await deleteApplication(appToDelete.id);
             if (result.success) {
-                setApps(prev => prev.filter(a => a.id !== appToDelete.id));
-                setDownloadMessage({ type: 'success', text: `Application ${appToDelete.application_code} deleted successfully.` });
+                // If the app was not in 'deleted' status, it's now 'deleted' (soft delete)
+                // If it was already 'deleted', it's now permanently removed.
+                const isPermanent = appToDelete.status === 'deleted';
+
+                if (isPermanent) {
+                    setApps(prev => prev.filter(a => a.id !== appToDelete.id));
+                    setDownloadMessage({ type: 'success', text: `Application ${appToDelete.application_code} permanently deleted.` });
+                } else {
+                    // Refresh counts or move to deleted tab if we want immediate local update
+                    // For simplicity, just reload or rely on server-side filtering on next tab change
+                    handleRefresh();
+                }
                 setTimeout(() => setDownloadMessage(null), 3000);
             } else {
                 setDownloadMessage({ type: 'error', text: `Failed to delete application: ${result.error}` });
@@ -166,6 +176,21 @@ export default function GlobalOversightClient({
         } finally {
             setShowDeleteModal(false);
             setAppToDelete(null);
+        }
+    }
+
+    async function handleRestoreApplication(appId: string) {
+        try {
+            const result = await restoreApplication(appId);
+            if (result.success) {
+                setDownloadMessage({ type: 'success', text: `Application restored to pending.` });
+                handleRefresh();
+            } else {
+                setDownloadMessage({ type: 'error', text: `Restore failed: ${result.error}` });
+            }
+        } catch (error) {
+            console.error("Restore error:", error);
+            setDownloadMessage({ type: 'error', text: 'An error occurred while restoring.' });
         }
     }
 
@@ -389,6 +414,7 @@ export default function GlobalOversightClient({
                         { id: 'approved', label: 'Approve', count: counts.approved, color: 'text-emerald-600', bg: 'bg-emerald-100' },
                         { id: 'completed', label: 'Complete', count: counts.completed, color: 'text-blue-600', bg: 'bg-blue-100' },
                         { id: 'rejected', label: 'Rejected', count: counts.rejected, color: 'text-rose-600', bg: 'bg-rose-100' },
+                        { id: 'deleted', label: 'Deleted', count: counts.deleted, color: 'text-zinc-600', bg: 'bg-zinc-100' },
                     ].map((tab) => (
                         <button
                             key={tab.id}
@@ -477,6 +503,7 @@ export default function GlobalOversightClient({
                     setAppToDelete(app);
                     setShowDeleteModal(true);
                 }}
+                onRestore={handleRestoreApplication}
                 updatingId={updatingId}
                 downloadingId={downloadingId}
                 onRefresh={handleRefresh}
@@ -587,6 +614,7 @@ export default function GlobalOversightClient({
                     }}
                     onConfirm={handleDeleteApplication}
                     applicationCode={appToDelete.application_code}
+                    isSoftDelete={appToDelete.status !== 'deleted'}
                 />
             )}
 

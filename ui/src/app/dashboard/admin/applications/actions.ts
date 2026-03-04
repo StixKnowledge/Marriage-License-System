@@ -18,19 +18,28 @@ export async function getAllApplications(page: number = 1, limit: number = 50, s
         console.error("Error getting counts:", countError);
     }
 
-    const allCounts = { all: 0, pending: 0, approved: 0, completed: 0, rejected: 0 };
+    const allCounts = { all: 0, pending: 0, approved: 0, completed: 0, rejected: 0, deleted: 0 };
     if (countData) {
-        allCounts.all = countData.length;
         countData.forEach(row => {
             const s = (row.status || 'pending').toLowerCase();
+            // Total 'all' should probably exclude deleted records to keep management clean, 
+            // or include them if that's what the user wants. 
+            // User said "i should see 5 branched: all, pending, approve, complete, and rejected" earlier.
+            // Now adding a 6th: Deleted.
+            if (s !== 'deleted') allCounts.all++;
+
             if (s === "pending" || s === "submitted" || s === "processing" || s === "draft") allCounts.pending++;
             else if (s === "approved") allCounts.approved++;
             else if (s === "completed") allCounts.completed++;
             else if (s === "rejected") allCounts.rejected++;
+            else if (s === "deleted") allCounts.deleted++;
         });
     }
 
     let query = supabase.from("marriage_applications").select("*", { count: "exact" });
+
+    // Auto-purge applications deleted for more than 1 week
+    await purgeDeletedApplications();
 
     // Handle status filtering
     if (statusFilter && statusFilter !== 'all') {
@@ -39,6 +48,9 @@ export async function getAllApplications(page: number = 1, limit: number = 50, s
         } else {
             query = query.eq('status', statusFilter);
         }
+    } else {
+        // By default (All tab), exclude deleted applications
+        query = query.neq('status', 'deleted');
     }
 
     // Get table data with count
@@ -585,21 +597,87 @@ export async function deleteApplication(applicationId: string) {
 
     const supabase = createAdminClient();
 
-    // The tables related to marriage_applications should have ON DELETE CASCADE.
-    // However, for safety and to ensure clean state, we explicitly delete the main record.
-    // If ON DELETE CASCADE is not set, this will fail if there are dependent records.
+    // Check if it's already deleted (for permanent deletion)
+    const { data: currentApp } = await supabase
+        .from("marriage_applications")
+        .select("status")
+        .eq("id", applicationId)
+        .single();
+
+    if (currentApp?.status === 'deleted') {
+        // Permanent deletion if already in deleted status (e.g. from Deleted tab)
+        const { error } = await supabase
+            .from("marriage_applications")
+            .delete()
+            .eq("id", applicationId);
+
+        if (error) {
+            console.error("Error permanently deleting application:", error);
+            return { success: false, error: error.message };
+        }
+    } else {
+        // Soft deletion
+        const { error } = await supabase
+            .from("marriage_applications")
+            .update({
+                status: 'deleted',
+                updated_at: new Date().toISOString()
+            })
+            .eq("id", applicationId);
+
+        if (error) {
+            console.error("Error soft deleting application:", error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    revalidatePath("/dashboard/admin/applications");
+    revalidatePath("/dashboard/admin");
+    return { success: true };
+}
+
+export async function restoreApplication(applicationId: string) {
+    console.log("restoreApplication called with:", { applicationId });
+
+    const role = await getCurrentUserRole();
+    if (role !== 'admin') {
+        return { success: false, error: "Unauthorized: Only ADMIN can restore applications." };
+    }
+
+    const supabase = createAdminClient();
 
     const { error } = await supabase
         .from("marriage_applications")
-        .delete()
+        .update({
+            status: 'pending',
+            updated_at: new Date().toISOString()
+        })
         .eq("id", applicationId);
 
     if (error) {
-        console.error("Error deleting application:", error);
+        console.error("Error restoring application:", error);
         return { success: false, error: error.message };
     }
 
     revalidatePath("/dashboard/admin/applications");
     revalidatePath("/dashboard/admin");
     return { success: true };
+}
+
+export async function purgeDeletedApplications() {
+    const supabase = createAdminClient();
+
+    // Applications in 'deleted' status for more than 7 days
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+    const { error } = await supabase
+        .from("marriage_applications")
+        .delete()
+        .eq("status", "deleted")
+        .lt("updated_at", oneWeekAgo.toISOString());
+
+    if (error) {
+        console.error("Error purging old deleted applications:", error);
+    }
 }
