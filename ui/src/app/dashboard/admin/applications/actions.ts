@@ -42,17 +42,21 @@ export async function getAllApplications(page: number = 1, limit: number = 50) {
                 mother_name,
                 giver_name,
                 giver_relationship,
+                giver_suffix,
                 include_id,
                 id_type,
                 id_no,
                 giver_include_id,
                 giver_id_type,
                 giver_id_no,
+                is_not_born_in_ph,
+                birth_country,
                 addresses (
                     barangay,
                     municipality,
                     province,
-                    country
+                    country,
+                    is_foreigner
                 )
             )
         `)

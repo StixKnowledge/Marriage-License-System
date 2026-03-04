@@ -105,7 +105,8 @@ export async function submitAdminApplication(formData: MarriageFormData, generat
             barangay: formData.gBrgy,
             province: formData.gProv,
             municipality: formData.gTown,
-            country: formData.gCountry || "Philippines",
+            country: (formData as any).gCountry || "Philippines",
+            is_foreigner: !!(formData as any).gIsForeigner,
         };
 
         console.log('Inserting groom address:', groomAddressPayload);
@@ -131,7 +132,8 @@ export async function submitAdminApplication(formData: MarriageFormData, generat
             barangay: formData.bBrgy,
             province: formData.bProv,
             municipality: formData.bTown,
-            country: formData.bCountry || "Philippines",
+            country: (formData as any).bCountry || "Philippines",
+            is_foreigner: !!(formData as any).bIsForeigner,
         };
 
         console.log('Inserting bride address:', brideAddressPayload);
@@ -189,6 +191,8 @@ export async function submitAdminApplication(formData: MarriageFormData, generat
         age: formData.gAge,
         citizenship: formData.gCitizen,
         birth_place: formData.gBirthPlace || null,
+        birth_country: (formData as any).gBirthCountry || "Philippines",
+        is_not_born_in_ph: !!(formData as any).gIsNotBornInPh,
         religion: formData.gReligion || null,
         father_name: [formData.gFathF, formData.gFathM, formData.gFathL].filter(Boolean).join(' ') || null,
         mother_name: [formData.gMothF, formData.gMothM, formData.gMothL].filter(Boolean).join(' ') || null,
@@ -227,6 +231,8 @@ export async function submitAdminApplication(formData: MarriageFormData, generat
         age: formData.bAge,
         citizenship: formData.bCitizen,
         birth_place: formData.bBirthPlace || null,
+        birth_country: (formData as any).bBirthCountry || "Philippines",
+        is_not_born_in_ph: !!(formData as any).bIsNotBornInPh,
         religion: formData.bReligion || null,
         father_name: [formData.bFathF, formData.bFathM, formData.bFathL].filter(Boolean).join(' ') || null,
         mother_name: [formData.bMothF, formData.bMothM, formData.bMothL].filter(Boolean).join(' ') || null,

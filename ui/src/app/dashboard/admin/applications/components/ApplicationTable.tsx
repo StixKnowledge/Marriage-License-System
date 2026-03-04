@@ -39,6 +39,7 @@ export default function ApplicationTable({
                         onClick={onRefresh}
                         className="h-9 w-9 rounded-xl bg-zinc-100 hover:bg-zinc-900 hover:text-white text-zinc-500 flex items-center justify-center transition-all duration-200 shadow-sm active:scale-90"
                         title="Refresh Applications"
+                        suppressHydrationWarning
                     >
                         <RefreshCw className="h-4 w-4" />
                     </button>

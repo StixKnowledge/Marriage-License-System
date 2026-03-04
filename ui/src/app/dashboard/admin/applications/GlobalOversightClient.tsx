@@ -206,11 +206,11 @@ export default function GlobalOversightClient({
                 gBday: app.groom?.birth_date ? new Date(app.groom.birth_date).toLocaleDateString('en-US') : '',
                 gAge: app.groom?.age || 0,
                 gBirthPlace: app.groom?.birth_place || (app.groom?.addresses ? `${app.groom.addresses.municipality}, ${app.groom.addresses.province}` : ""),
-                gBirthCountry: "Philippines",
-                gTown: app.groom?.addresses?.municipality || '',
-                gProv: app.groom?.addresses?.province || 'Nueva Vizcaya',
-                gBrgy: app.groom?.addresses?.barangay || '',
-                gCountry: app.groom?.addresses?.country || 'Philippines',
+                gBirthCountry: app.groom?.birth_country || (app.groom?.is_not_born_in_ph ? "" : "Philippines"),
+                gTown: (Array.isArray(app.groom?.addresses) ? app.groom.addresses[0]?.municipality : app.groom?.addresses?.municipality) || '',
+                gProv: (Array.isArray(app.groom?.addresses) ? app.groom.addresses[0]?.province : app.groom?.addresses?.province) || 'Nueva Vizcaya',
+                gBrgy: (Array.isArray(app.groom?.addresses) ? app.groom.addresses[0]?.barangay : app.groom?.addresses?.barangay) || '',
+                gCountry: (Array.isArray(app.groom?.addresses) ? app.groom.addresses[0]?.country : app.groom?.addresses?.country) || 'Philippines',
                 gCitizen: app.groom?.citizenship || '',
                 gReligion: app.groom?.religion || '',
                 gCustomReligion: app.groom?.religion || '',
@@ -235,11 +235,11 @@ export default function GlobalOversightClient({
                 bBday: app.bride?.birth_date ? new Date(app.bride.birth_date).toLocaleDateString('en-US') : '',
                 bAge: app.bride?.age || 0,
                 bBirthPlace: app.bride?.birth_place || (app.bride?.addresses ? `${app.bride.addresses.municipality}, ${app.bride.addresses.province}` : ""),
-                bBirthCountry: "Philippines",
-                bTown: app.bride?.addresses?.municipality || '',
-                bProv: app.bride?.addresses?.province || 'Nueva Vizcaya',
-                bBrgy: app.bride?.addresses?.barangay || '',
-                bCountry: app.bride?.addresses?.country || 'Philippines',
+                bBirthCountry: app.bride?.birth_country || (app.bride?.is_not_born_in_ph ? "" : "Philippines"),
+                bTown: (Array.isArray(app.bride?.addresses) ? app.bride.addresses[0]?.municipality : app.bride?.addresses?.municipality) || '',
+                bProv: (Array.isArray(app.bride?.addresses) ? app.bride.addresses[0]?.province : app.bride?.addresses?.province) || 'Nueva Vizcaya',
+                bBrgy: (Array.isArray(app.bride?.addresses) ? app.bride.addresses[0]?.barangay : app.bride?.addresses?.barangay) || '',
+                bCountry: (Array.isArray(app.bride?.addresses) ? app.bride.addresses[0]?.country : app.bride?.addresses?.country) || 'Philippines',
                 bCitizen: app.bride?.citizenship || '',
                 bReligion: app.bride?.religion || '',
                 bCustomReligion: app.bride?.religion || '',
@@ -341,7 +341,7 @@ export default function GlobalOversightClient({
     }, [apps, search]);
 
     return (
-        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10" suppressHydrationWarning>
             {/* ── Header ── */}
             <div className="flex flex-col gap-6">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -352,6 +352,7 @@ export default function GlobalOversightClient({
                     <button
                         onClick={() => setShowAdminForm(true)}
                         className="h-12 px-6 bg-zinc-900 hover:bg-zinc-800 text-white rounded-2xl font-bold text-sm transition-all shadow-xl shadow-zinc-900/10 flex items-center justify-center gap-2 md:w-auto w-full"
+                        suppressHydrationWarning
                     >
                         <FileText className="h-4 w-4" />
                         Create Application
@@ -365,6 +366,7 @@ export default function GlobalOversightClient({
                         onChange={e => setSearch(e.target.value)}
                         placeholder="Search by Code or Name..."
                         className="h-14 w-full bg-white border border-zinc-100 rounded-2xl pl-12 pr-4 text-sm font-bold placeholder:text-zinc-400 focus:outline-none focus:ring-4 focus:ring-zinc-900/5 transition-all shadow-xl shadow-zinc-200/20"
+                        suppressHydrationWarning
                     />
                 </div>
 
@@ -392,6 +394,7 @@ export default function GlobalOversightClient({
                     <button
                         onClick={() => setShowPhotoModal(true)}
                         className="w-full h-12 bg-zinc-900 hover:bg-zinc-800 text-white rounded-2xl font-bold text-sm transition-all shadow-xl shadow-zinc-200/20"
+                        suppressHydrationWarning
                     >
                         Open Photo Capture
                     </button>

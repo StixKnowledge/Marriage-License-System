@@ -27,6 +27,7 @@ export function ActionDropdown({
                 title="View Details"
                 onClick={onView}
                 className="h-9 w-9 rounded-xl bg-zinc-100 hover:bg-zinc-900 hover:text-white text-zinc-500 flex items-center justify-center transition-all duration-200 shadow-sm active:scale-90"
+                suppressHydrationWarning
             >
                 <Eye className="h-4 w-4" />
             </button>
@@ -36,6 +37,7 @@ export function ActionDropdown({
                 onClick={() => onDownloadExcel(app)}
                 disabled={isDownloading}
                 className="h-9 w-9 rounded-xl bg-zinc-100 hover:bg-zinc-900 hover:text-white text-zinc-500 flex items-center justify-center transition-all duration-200 shadow-sm active:scale-90 disabled:opacity-50 disabled:cursor-not-allowed"
+                suppressHydrationWarning
             >
                 {isDownloading
                     ? <Loader2 className="h-4 w-4 animate-spin" />
@@ -47,6 +49,7 @@ export function ActionDropdown({
                 title="Manual Status Update"
                 onClick={() => onManualUpdate(app)}
                 className="h-9 w-9 rounded-xl bg-zinc-100 hover:bg-zinc-900 hover:text-white text-zinc-500 flex items-center justify-center transition-all duration-200 shadow-sm active:scale-90"
+                suppressHydrationWarning
             >
                 {isUpdating
                     ? <Loader2 className="h-4 w-4 animate-spin" />
@@ -59,6 +62,7 @@ export function ActionDropdown({
                     title="Delete Application"
                     onClick={() => onDelete(app)}
                     className="h-9 w-9 rounded-xl bg-rose-50 hover:bg-rose-600 hover:text-white text-rose-500 flex items-center justify-center transition-all duration-200 shadow-sm active:scale-90"
+                    suppressHydrationWarning
                 >
                     <Trash2 className="h-4 w-4" />
                 </button>
