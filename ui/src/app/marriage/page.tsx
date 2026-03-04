@@ -335,7 +335,7 @@ export default function MarriageForm() {
                                                 </Field>
                                             </div>
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                <Field label="Nationality">
+                                                <Field label="Nationality" required>
                                                     <Input
                                                         placeholder="e.g. Filipino"
                                                         className="bg-white"
@@ -436,7 +436,7 @@ export default function MarriageForm() {
                                                 </Field>
                                             </div>
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                <Field label="Nationality">
+                                                <Field label="Nationality" required>
                                                     <Input
                                                         placeholder="e.g. Filipino"
                                                         className="bg-white"
@@ -513,7 +513,7 @@ export default function MarriageForm() {
                                         </Button>
                                         {!isFormValid && (
                                             <p className="text-[10px] font-black text-rose-500 uppercase tracking-widest animate-pulse">
-                                                Please complete all mandatory fields to proceed
+                                                Please fill up the form above
                                             </p>
                                         )}
                                         <button type="button" onClick={() => setShowClearAlert(true)} className="flex items-center gap-2 text-slate-400 hover:text-red-500 transition-colors text-sm font-bold uppercase tracking-widest">

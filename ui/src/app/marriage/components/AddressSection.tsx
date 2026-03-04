@@ -68,7 +68,10 @@ export function AddressSection({
                                 setFormData?.((prev: any) => ({
                                     ...prev,
                                     [`${prefix}IsForeigner`]: checked,
-                                    [`${prefix}Country`]: checked ? prev[`${prefix}Country`] : "Philippines"
+                                    [`${prefix}Country`]: checked ? (prev[`${prefix}Country`] === "Philippines" ? "" : prev[`${prefix}Country`]) : "Philippines",
+                                    [`${prefix}Prov`]: checked ? "" : prev[`${prefix}Prov`],
+                                    [`${prefix}Town`]: checked ? "" : prev[`${prefix}Town`],
+                                    [`${prefix}Brgy`]: checked ? "" : prev[`${prefix}Brgy`],
                                 }));
                             }}
                         />
@@ -164,7 +167,7 @@ export function AddressSection({
                                 onChange={(e) => updateFormData(`${prefix}Town`, e.target.value)}
                             />
                         </Field>
-                        <Field label="Barangay" required>
+                        <Field label="Barangay" required={!isForeigner}>
                             <Input
                                 placeholder="Type barangay/district"
                                 className="bg-white"

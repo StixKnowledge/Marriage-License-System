@@ -278,11 +278,17 @@ export function useMarriageForm() {
                 formData[`${prefix}First`],
                 formData[`${prefix}Last`],
                 formData[`${prefix}Bday`],
-                formData[`${prefix}Brgy`],
                 formData[`${prefix}Town`],
                 formData[`${prefix}Prov`],
                 formData[`${prefix}Religion`],
+                formData[`${prefix}Citizen`],
+                formData[`${prefix}BirthPlace`],
             ];
+
+            // If not foreigner, Brgy is required
+            if (!formData[`${prefix}IsForeigner`]) {
+                mainFields.push(formData[`${prefix}Brgy`]);
+            }
 
             if (mainFields.some(f => !f || f.toString().trim() === "")) return false;
 

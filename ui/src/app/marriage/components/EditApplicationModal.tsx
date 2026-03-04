@@ -184,7 +184,7 @@ export default function EditApplicationModal({ isOpen, onClose, onSuccess, selec
                                     </Field>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <Field label="Nationality">
+                                    <Field label="Nationality" required>
                                         <Input
                                             placeholder="e.g. Filipino"
                                             className="bg-white"
@@ -283,7 +283,7 @@ export default function EditApplicationModal({ isOpen, onClose, onSuccess, selec
                                     </Field>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <Field label="Nationality">
+                                    <Field label="Nationality" required>
                                         <Input
                                             placeholder="e.g. Filipino"
                                             className="bg-white"
@@ -356,7 +356,7 @@ export default function EditApplicationModal({ isOpen, onClose, onSuccess, selec
                             </Button>
                             {!isFormValid && (
                                 <p className="text-[10px] font-black text-rose-500 uppercase tracking-widest animate-pulse">
-                                    Please complete all mandatory fields to proceed
+                                    Please fill up the form above
                                 </p>
                             )}
                         </div>

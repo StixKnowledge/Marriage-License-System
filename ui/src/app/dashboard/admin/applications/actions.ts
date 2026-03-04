@@ -366,6 +366,7 @@ export async function updateApplicationDetails(applicationId: string, formData: 
                         municipality: formData[`${prefix}Town`],
                         province: formData[`${prefix}Prov`],
                         country: formData[`${prefix}Country`] || "Philippines",
+                        is_foreigner: !!formData[`${prefix}IsForeigner`],
                         updated_at: new Date().toISOString()
                     })
                     .eq("id", applicant.address_id);
@@ -385,6 +386,8 @@ export async function updateApplicationDetails(applicationId: string, formData: 
                     age: formData[`${prefix}Age`],
                     citizenship: formData[`${prefix}Citizen`] ?? null,
                     birth_place: formData[`${prefix}BirthPlace`],
+                    is_not_born_in_ph: !!formData[`${prefix}IsNotBornInPh`],
+                    birth_country: formData[`${prefix}BirthCountry`] || "Philippines",
                     religion: formData[`${prefix}Religion`] === "Others" ? formData[`${prefix}CustomReligion`] : formData[`${prefix}Religion`],
                     father_name: `${formData[`${prefix}FathF`]} ${formData[`${prefix}FathM`]} ${formData[`${prefix}FathL`]}`.trim(),
                     mother_name: `${formData[`${prefix}MothF`]} ${formData[`${prefix}MothM`]} ${formData[`${prefix}MothL`]}`.trim(),

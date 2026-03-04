@@ -67,12 +67,13 @@ export function BirthPlaceSection({
             </div>
 
             <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 mb-2">
-                <label className="flex items-center gap-3 cursor-pointer group">
+                <label className={`flex items-center gap-3 cursor-pointer group ${sameAsAddress ? 'opacity-50 cursor-not-allowed' : ''}`}>
                     <div className="relative flex items-center">
                         <input
                             type="checkbox"
-                            className="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-slate-300 transition-all checked:bg-primary checked:border-primary focus:outline-none"
+                            className="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-slate-300 transition-all checked:bg-primary checked:border-primary focus:outline-none disabled:cursor-not-allowed"
                             checked={!!formData[`${prefix}IsNotBornInPh`]}
+                            disabled={sameAsAddress}
                             onChange={(e) => {
                                 const checked = e.target.checked;
                                 setFormData((prev: any) => ({
@@ -87,7 +88,7 @@ export function BirthPlaceSection({
                         </svg>
                     </div>
                     <span className="text-xs font-black text-slate-600 uppercase tracking-wide group-hover:text-primary transition-colors">
-                        Are you not born in the Philippines?
+                        Are you not born in the Philippines? {sameAsAddress && <span className="text-[10px] text-primary/50 normal-case font-bold">(Managed by Current Address)</span>}
                     </span>
                 </label>
             </div>
@@ -181,44 +182,46 @@ export function BirthPlaceSection({
                         </>
                     ) : (
                         <>
-                            <Field label="Birth Province">
+                            <Field label="Birth Province" required>
                                 <Input
                                     placeholder="Type province/state"
                                     className="bg-white"
                                     value={(() => {
-                                        const fullBirth = (formData[`${prefix}BirthPlace`] ?? "").toString().trim();
-                                        if (!fullBirth) return "";
-                                        const parts = fullBirth.split(',').map((s: string) => s.trim());
-                                        return parts.length > 1 ? parts[parts.length - 1] : parts[0] || "";
+                                        const fullBirth = (formData[`${prefix}BirthPlace`] ?? "").toString();
+                                        const commaIndex = fullBirth.indexOf(',');
+                                        if (commaIndex === -1) return "";
+                                        return fullBirth.substring(commaIndex + 1).trim();
                                     })()}
                                     onChange={(e) => {
-                                        const prov = e.target.value.trim();
-                                        const parts = (formData[`${prefix}BirthPlace`] || "").split(',').map((s: string) => s.trim());
-                                        const town = parts.length >= 2 ? parts[0] : "";
+                                        const prov = e.target.value;
+                                        const fullBirth = (formData[`${prefix}BirthPlace`] || "").toString();
+                                        const commaIndex = fullBirth.indexOf(',');
+                                        const town = commaIndex !== -1 ? fullBirth.substring(0, commaIndex).trim() : fullBirth.trim();
                                         setFormData((prev: any) => ({
                                             ...prev,
-                                            [`${prefix}BirthPlace`]: town ? `${town}, ${prov}` : prov,
+                                            [`${prefix}BirthPlace`]: `${town}, ${prov}`,
                                         }));
                                     }}
                                 />
                             </Field>
-                            <Field label="Birth Town/Municipality">
+                            <Field label="Birth Town/Municipality" required>
                                 <Input
                                     placeholder="Type town/municipality"
                                     className="bg-white"
                                     value={(() => {
-                                        const fullBirth = (formData[`${prefix}BirthPlace`] ?? "").toString().trim();
-                                        if (!fullBirth) return "";
-                                        const parts = fullBirth.split(',').map((s: string) => s.trim());
-                                        return parts[0] || "";
+                                        const fullBirth = (formData[`${prefix}BirthPlace`] ?? "").toString();
+                                        const commaIndex = fullBirth.indexOf(',');
+                                        if (commaIndex === -1) return fullBirth.trim();
+                                        return fullBirth.substring(0, commaIndex).trim();
                                     })()}
                                     onChange={(e) => {
-                                        const town = e.target.value.trim();
-                                        const parts = (formData[`${prefix}BirthPlace`] || "").split(',').map((s: string) => s.trim());
-                                        const prov = parts.length > 1 ? parts[parts.length - 1] : parts[0] || "";
+                                        const town = e.target.value;
+                                        const fullBirth = (formData[`${prefix}BirthPlace`] || "").toString();
+                                        const commaIndex = fullBirth.indexOf(',');
+                                        const prov = commaIndex !== -1 ? fullBirth.substring(commaIndex + 1).trim() : "";
                                         setFormData((prev: any) => ({
                                             ...prev,
-                                            [`${prefix}BirthPlace`]: prov ? `${town}, ${prov}` : town,
+                                            [`${prefix}BirthPlace`]: `${town}, ${prov}`,
                                         }));
                                     }}
                                 />
