@@ -195,6 +195,16 @@ export default function AdminMarriageForm({ isOpen, onClose, onSuccess }: AdminM
                                                     </select>
                                                 </Field>
                                             </div>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <Field label="Nationality" required>
+                                                    <Input
+                                                        placeholder="e.g. Filipino"
+                                                        className="bg-white"
+                                                        value={formData.gCitizen}
+                                                        onChange={e => setFormData({ ...formData, gCitizen: toTitleCase(e.target.value) })}
+                                                    />
+                                                </Field>
+                                            </div>
                                             <AnimatePresence>
                                                 {formData.gReligion === "Others" && (
                                                     <motion.div
@@ -282,6 +292,16 @@ export default function AdminMarriageForm({ isOpen, onClose, onSuccess }: AdminM
                                                             <option key={rel} value={rel}>{rel}</option>
                                                         ))}
                                                     </select>
+                                                </Field>
+                                            </div>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <Field label="Nationality" required>
+                                                    <Input
+                                                        placeholder="e.g. Filipino"
+                                                        className="bg-white"
+                                                        value={formData.bCitizen}
+                                                        onChange={e => setFormData({ ...formData, bCitizen: toTitleCase(e.target.value) })}
+                                                    />
                                                 </Field>
                                             </div>
                                             <AnimatePresence>
