@@ -663,6 +663,7 @@ export function DissolutionFields({
                                 />
                             </Field>
                         </div>
+                    </div>
                 </motion.div>
             )}
         </AnimatePresence>
