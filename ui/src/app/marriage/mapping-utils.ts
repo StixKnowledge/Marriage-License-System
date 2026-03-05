@@ -35,8 +35,8 @@ export const mapAppToFormData = (app: any) => {
             ? normalize(bride.birth_place) === normalize(bAddrShort)
             : true;
 
-    const gAddrCountry = groom.addresses?.country || "Philippines";
-    const bAddrCountry = bride.addresses?.country || "Philippines";
+    const gAddrCountry = groom.addresses?.country != null ? groom.addresses.country : "Philippines";
+    const bAddrCountry = bride.addresses?.country != null ? bride.addresses.country : "Philippines";
 
     return {
         ...INITIAL_FORM_STATE,
@@ -57,12 +57,12 @@ export const mapAppToFormData = (app: any) => {
         gCountry: gAddrCountry,
         gIsForeigner: !!groom.addresses?.is_foreigner,
         gIsNotBornInPh: !!groom.is_not_born_in_ph,
-        gBirthCountry: groom.birth_country || "Philippines",
+        gBirthCountry: groom.birth_country != null ? groom.birth_country : "Philippines",
         gCitizen: groom.citizenship || "",
         gStatus: groom.civil_status || "Single",
         gDissolvedHow: groom.dissolved_how || "",
         gDissolvedPlace: groom.dissolved_place || "",
-        gDissolvedCountry: groom.dissolved_country || "Philippines",
+        gDissolvedCountry: groom.dissolved_country != null ? groom.dissolved_country : "Philippines",
         gDissolvedIsPh: groom.dissolved_country ? groom.dissolved_country === "Philippines" : true,
         gDissolvedDate: groom.dissolved_date || "",
         gRelationshipDegree: groom.relationship_degree || "",
@@ -107,12 +107,12 @@ export const mapAppToFormData = (app: any) => {
         bCountry: bAddrCountry,
         bIsForeigner: !!bride.addresses?.is_foreigner,
         bIsNotBornInPh: !!bride.is_not_born_in_ph,
-        bBirthCountry: bride.birth_country || "Philippines",
+        bBirthCountry: bride.birth_country != null ? bride.birth_country : "Philippines",
         bCitizen: bride.citizenship || "",
         bStatus: bride.civil_status || "Single",
         bDissolvedHow: bride.dissolved_how || "",
         bDissolvedPlace: bride.dissolved_place || "",
-        bDissolvedCountry: bride.dissolved_country || "Philippines",
+        bDissolvedCountry: bride.dissolved_country != null ? bride.dissolved_country : "Philippines",
         bDissolvedIsPh: bride.dissolved_country ? bride.dissolved_country === "Philippines" : true,
         bDissolvedDate: bride.dissolved_date || "",
         bRelationshipDegree: bride.relationship_degree || "",

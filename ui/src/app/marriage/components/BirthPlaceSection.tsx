@@ -79,7 +79,7 @@ export function BirthPlaceSection({
                                 setFormData((prev: any) => ({
                                     ...prev,
                                     [`${prefix}IsNotBornInPh`]: !bornInPh,
-                                    [`${prefix}BirthCountry`]: bornInPh ? "Philippines" : prev[`${prefix}BirthCountry`]
+                                    [`${prefix}BirthCountry`]: bornInPh ? "Philippines" : (prev[`${prefix}BirthCountry`] === "Philippines" ? "" : prev[`${prefix}BirthCountry`])
                                 }));
                             }}
                         />
@@ -108,9 +108,9 @@ export function BirthPlaceSection({
                         <Field label="Country" required>
                             <select
                                 className="flex h-10 w-full rounded-md border border-input bg-white px-3 py-2 text-sm focus:ring-2 focus:ring-primary outline-none"
-                                value={formData[`${prefix}BirthCountry`] || "Philippines"}
+                                value={formData[`${prefix}BirthCountry`] != null ? formData[`${prefix}BirthCountry`] : "Philippines"}
                                 onChange={(e) => {
-                                    const newCountry = e.target.value || "Philippines";
+                                    const newCountry = e.target.value;
                                     setFormData((prev: any) => ({
                                         ...prev,
                                         [`${prefix}BirthCountry`]: newCountry,
@@ -125,7 +125,7 @@ export function BirthPlaceSection({
                             </select>
                         </Field>
                     )}
-                    {(formData[`${prefix}BirthCountry`] || "Philippines") === "Philippines" ? (
+                    {(formData[`${prefix}BirthCountry`] ?? "Philippines") === "Philippines" ? (
                         <>
                             <Field label="Province">
                                 <select

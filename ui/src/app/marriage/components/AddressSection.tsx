@@ -35,7 +35,7 @@ export function AddressSection({
     const finalTownOptions = currentTownOptions.length > 0 ? currentTownOptions : townOptions;
 
     const isForeigner = !!formData[`${prefix}IsForeigner`];
-    const currentCountry = formData[`${prefix}Country`] || "Philippines";
+    const currentCountry = formData[`${prefix}Country`] != null ? formData[`${prefix}Country`] : "Philippines";
     const isPhilippines = currentCountry === "Philippines";
 
     const updateFormData = (key: string, value: any) => {

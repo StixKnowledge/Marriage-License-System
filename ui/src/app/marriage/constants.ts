@@ -27,7 +27,7 @@ export const INITIAL_FORM_STATE = {
     // Groom
     gFirst: "", gMiddle: "", gLast: "", gSuffix: "", gCustomSuffix: "", gBday: "", gAge: 0,
     gBirthPlace: "Philippines", gBirthCountry: "Philippines", gBrgy: "", gTown: "", gProv: "Nueva Vizcaya", gCountry: "Philippines",
-    gCitizen: "", gStatus: "Single", gReligion: "", gCustomReligion: "",
+    gCitizen: "Filipino", gStatus: "Single", gReligion: "", gCustomReligion: "",
     gDissolvedHow: "", gDissolvedPlace: "", gDissolvedCountry: "Philippines", gDissolvedIsPh: true, gDissolvedDate: "", gRelationshipDegree: "",
     gFathF: "", gFathM: "", gFathL: "", gFathSuffix: "", gFathCustomSuffix: "",
     gMothF: "", gMothM: "", gMothL: "", gMothSuffix: "", gMothCustomSuffix: "",
@@ -48,7 +48,7 @@ export const INITIAL_FORM_STATE = {
     // Bride
     bFirst: "", bMiddle: "", bLast: "", bSuffix: "", bCustomSuffix: "", bBday: "", bAge: 0,
     bBirthPlace: "Philippines", bBirthCountry: "Philippines", bBrgy: "", bTown: "", bProv: "Nueva Vizcaya", bCountry: "Philippines",
-    bCitizen: "", bStatus: "Single", bReligion: "", bCustomReligion: "",
+    bCitizen: "Filipino", bStatus: "Single", bReligion: "", bCustomReligion: "",
     bDissolvedHow: "", bDissolvedPlace: "", bDissolvedCountry: "Philippines", bDissolvedIsPh: true, bDissolvedDate: "", bRelationshipDegree: "",
     bFathF: "", bFathM: "", bFathL: "", bFathSuffix: "", bFathCustomSuffix: "",
     bMothF: "", bMothM: "", bMothL: "", bMothSuffix: "", bMothCustomSuffix: "",
