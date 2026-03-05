@@ -37,6 +37,8 @@ export default function AdminMarriageForm({ isOpen, onClose, onSuccess }: AdminM
         bBrgyOptions,
         gBirthTownOptions,
         bBirthTownOptions,
+        gDissolvedTownOptions,
+        bDissolvedTownOptions,
         loading,
         gSameAsAddress,
         setGSameAsAddress,
@@ -50,6 +52,8 @@ export default function AdminMarriageForm({ isOpen, onClose, onSuccess }: AdminM
         handleBrgyChange,
         handleBirthProvinceChange,
         handleBirthTownChange,
+        handleDissolvedProvinceChange,
+        handleDissolvedTownChange,
         handleReset,
         calculateAge,
         isFormValid,
@@ -217,7 +221,17 @@ export default function AdminMarriageForm({ isOpen, onClose, onSuccess }: AdminM
                                                     </select>
                                                 </Field>
                                             </div>
-                                            <DissolutionFields prefix="g" data={formData} setData={setFormData} toTitleCase={toTitleCase} countryOptions={COUNTRY_OPTIONS} />
+                                            <DissolutionFields
+                                                prefix="g"
+                                                data={formData}
+                                                setData={setFormData}
+                                                toTitleCase={toTitleCase}
+                                                countryOptions={COUNTRY_OPTIONS}
+                                                provincesList={provincesList}
+                                                dissolvedTownOptions={gDissolvedTownOptions}
+                                                handleDissolvedProvinceChange={handleDissolvedProvinceChange}
+                                                handleDissolvedTownChange={handleDissolvedTownChange}
+                                            />
                                             <AnimatePresence>
                                                 {formData.gReligion === "Others" && (
                                                     <motion.div
@@ -329,7 +343,17 @@ export default function AdminMarriageForm({ isOpen, onClose, onSuccess }: AdminM
                                                     </select>
                                                 </Field>
                                             </div>
-                                            <DissolutionFields prefix="b" data={formData} setData={setFormData} toTitleCase={toTitleCase} countryOptions={COUNTRY_OPTIONS} />
+                                            <DissolutionFields
+                                                prefix="b"
+                                                data={formData}
+                                                setData={setFormData}
+                                                toTitleCase={toTitleCase}
+                                                countryOptions={COUNTRY_OPTIONS}
+                                                provincesList={provincesList}
+                                                dissolvedTownOptions={bDissolvedTownOptions}
+                                                handleDissolvedProvinceChange={handleDissolvedProvinceChange}
+                                                handleDissolvedTownChange={handleDissolvedTownChange}
+                                            />
                                             <AnimatePresence>
                                                 {formData.bReligion === "Others" && (
                                                     <motion.div

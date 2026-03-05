@@ -460,7 +460,27 @@ export function GiverSubSection({ prefix, age, data, setData, toTitleCase }: Giv
     );
 }
 
-export function DissolutionFields({ prefix, data, setData, toTitleCase, countryOptions }: { prefix: 'g' | 'b', data: any, setData: (d: any) => void, toTitleCase: (s: string) => string, countryOptions: any[] }) {
+export function DissolutionFields({
+    prefix,
+    data,
+    setData,
+    toTitleCase,
+    countryOptions,
+    provincesList,
+    dissolvedTownOptions,
+    handleDissolvedProvinceChange,
+    handleDissolvedTownChange
+}: {
+    prefix: 'g' | 'b',
+    data: any,
+    setData: (d: any) => void,
+    toTitleCase: (s: string) => string,
+    countryOptions: any[],
+    provincesList: any[],
+    dissolvedTownOptions: any[],
+    handleDissolvedProvinceChange: (prefix: 'g' | 'b', code: string, name: string) => void,
+    handleDissolvedTownChange: (prefix: 'g' | 'b', code: string, name: string, prov: string) => void
+}) {
     const status = data[`${prefix}Status`] || "Single";
 
     return (
@@ -470,81 +490,179 @@ export function DissolutionFields({ prefix, data, setData, toTitleCase, countryO
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
-                    className="space-y-4 bg-slate-50/50 p-4 rounded-2xl border border-slate-100 overflow-hidden mt-4"
+                    className="overflow-hidden mt-4"
                 >
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <Field label="How it dissolve?" required>
-                            <Input
-                                placeholder="e.g. Death, Court Decree"
-                                value={data[`${prefix}DissolvedHow`] || ""}
-                                onChange={e => setData({ ...data, [`${prefix}DissolvedHow`]: toTitleCase(e.target.value) })}
-                            />
-                        </Field>
-                        <Field label="Date when Dissolved" required>
-                            <Input
-                                type="date"
-                                value={data[`${prefix}DissolvedDate`] || ""}
-                                onChange={e => setData({ ...data, [`${prefix}DissolvedDate`]: e.target.value })}
-                            />
-                        </Field>
-                    </div>
-
-                    <div className="space-y-4 pt-4 border-t border-slate-200/50">
-                        <div className="flex items-center justify-between">
-                            <LabelWithIcon icon={<MapPin className="w-3 h-3" />} text="Place where it dissolved" />
-                        </div>
+                    <div className="space-y-4 bg-slate-50/50 p-4 rounded-2xl border border-slate-100">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <Field label="Is it dissolved in the Philippines?">
-                                <select
-                                    className="flex h-10 w-full rounded-md border border-input bg-white px-3 py-2 text-sm focus:ring-2 focus:ring-primary outline-none"
-                                    value={data[`${prefix}DissolvedIsPh`] ? "Yes" : "No"}
-                                    onChange={e => {
-                                        const isPh = e.target.value === "Yes";
-                                        setData({
-                                            ...data,
-                                            [`${prefix}DissolvedIsPh`]: isPh,
-                                            [`${prefix}DissolvedCountry`]: isPh ? "Philippines" : (data[`${prefix}DissolvedCountry`] === "Philippines" ? "" : data[`${prefix}DissolvedCountry`])
-                                        });
-                                    }}
-                                >
-                                    <option value="Yes">Yes</option>
-                                    <option value="No">No</option>
-                                </select>
-                            </Field>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <Field label={data[`${prefix}DissolvedIsPh`] ? "Municipality & Province" : "Foreign City/State"} required>
+                            <Field label="How it dissolve?" required>
                                 <Input
-                                    placeholder={data[`${prefix}DissolvedIsPh`] ? "e.g. Solano, Nueva Vizcaya" : "e.g. Los Angeles, California"}
-                                    value={data[`${prefix}DissolvedPlace`] || ""}
-                                    onChange={e => setData({ ...data, [`${prefix}DissolvedPlace`]: toTitleCase(e.target.value) })}
+                                    placeholder="e.g. Death, Court Decree"
+                                    value={data[`${prefix}DissolvedHow`] || ""}
+                                    onChange={e => setData({ ...data, [`${prefix}DissolvedHow`]: toTitleCase(e.target.value) })}
                                 />
                             </Field>
-                            {!data[`${prefix}DissolvedIsPh`] && (
-                                <Field label="Country" required>
-                                    <select
-                                        className="flex h-10 w-full rounded-md border border-input bg-white px-3 py-2 text-sm focus:ring-2 focus:ring-primary outline-none"
-                                        value={data[`${prefix}DissolvedCountry`] || ""}
-                                        onChange={e => setData({ ...data, [`${prefix}DissolvedCountry`]: e.target.value })}
-                                    >
-                                        <option value="" disabled>Select Country</option>
-                                        {countryOptions.map((c: any) => <option key={c.name} value={c.name}>{c.name}</option>)}
-                                    </select>
-                                </Field>
-                            )}
+                            <Field label="Date when Dissolved" required>
+                                <Input
+                                    type="date"
+                                    value={data[`${prefix}DissolvedDate`] || ""}
+                                    onChange={e => setData({ ...data, [`${prefix}DissolvedDate`]: e.target.value })}
+                                />
+                            </Field>
                         </div>
-                    </div>
 
-                    <div className="pt-4 border-t border-slate-200/50">
-                        <Field label="Degree of relationship" required>
-                            <Input
-                                placeholder="Enter relationship degree..."
-                                value={data[`${prefix}RelationshipDegree`] || ""}
-                                onChange={e => setData({ ...data, [`${prefix}RelationshipDegree`]: toTitleCase(e.target.value) })}
-                            />
-                        </Field>
-                    </div>
+                        <div className="space-y-4 pt-4 border-t border-slate-200/50">
+                            <div className="flex bg-slate-100/80 p-1 rounded-xl w-full border border-slate-200/50 mb-4">
+                                <label className="flex items-center gap-3 cursor-pointer group w-full p-2 px-3">
+                                    <div className="relative flex items-center">
+                                        <input
+                                            type="checkbox"
+                                            className="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-slate-300 transition-all checked:bg-primary checked:border-primary focus:outline-none"
+                                            checked={data[`${prefix}DissolvedIsPh`] === true}
+                                            onChange={(e) => {
+                                                const checked = e.target.checked;
+                                                setData({
+                                                    ...data,
+                                                    [`${prefix}DissolvedIsPh`]: checked,
+                                                    [`${prefix}DissolvedCountry`]: checked ? "Philippines" : "",
+                                                    [`${prefix}DissolvedPlace`]: ""
+                                                });
+                                            }}
+                                        />
+                                        <svg className="absolute w-3.5 h-3.5 text-white opacity-0 peer-checked:opacity-100 pointer-events-none top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+                                            <polyline points="20 6 9 17 4 12"></polyline>
+                                        </svg>
+                                    </div>
+                                    <span className="text-xs font-black text-slate-600 uppercase tracking-wide group-hover:text-primary transition-colors">
+                                        Is it dissolved in the Philippines?
+                                    </span>
+                                </label>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                {data[`${prefix}DissolvedIsPh`] ? (
+                                    <>
+                                        <Field label="Province" required>
+                                            <select
+                                                className="flex h-10 w-full rounded-md border border-input bg-white px-3 py-2 text-sm focus:ring-2 focus:ring-primary outline-none"
+                                                value={(() => {
+                                                    const fullPlace = (data[`${prefix}DissolvedPlace`] ?? "").toString().trim();
+                                                    if (!fullPlace) return "";
+                                                    const parts = fullPlace.split(',').map((s: string) => s.trim());
+                                                    const provName = parts.length > 1 ? parts[parts.length - 1] : parts[0];
+                                                    const found = provincesList.find(p => (p.province_name || "").trim() === provName);
+                                                    return found ? found.province_code : "";
+                                                })()}
+                                                onChange={(e) => {
+                                                    const val = e.target.value;
+                                                    const prov = provincesList.find(p => p.province_code === val);
+                                                    handleDissolvedProvinceChange(prefix, val, prov?.province_name || "");
+                                                }}
+                                            >
+                                                <option value="" disabled hidden>Select Province</option>
+                                                {provincesList.map((p) => (
+                                                    <option key={`${prefix}dissolve-prov-${p.province_code}`} value={p.province_code}>
+                                                        {p.province_name}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </Field>
+                                        <Field label="Municipality" required>
+                                            <select
+                                                className="flex h-10 w-full rounded-md border border-input bg-white px-3 py-2 text-sm disabled:opacity-50 focus:ring-2 focus:ring-primary outline-none"
+                                                disabled={!dissolvedTownOptions?.length}
+                                                value={(() => {
+                                                    const fullPlace = (data[`${prefix}DissolvedPlace`] ?? "").toString().trim();
+                                                    if (!fullPlace) return "";
+                                                    const parts = fullPlace.split(',').map((s: string) => s.trim());
+                                                    if (parts.length < 2) return "";
+                                                    const cityName = parts[0];
+                                                    const found = dissolvedTownOptions.find(t => {
+                                                        const n1 = (t.city_name || "").toLowerCase().replace(/\(capital\)/gi, "").trim();
+                                                        const n2 = cityName.toLowerCase().replace(/\(capital\)/gi, "").trim();
+                                                        return n1 === n2;
+                                                    });
+                                                    return found ? found.city_code : "";
+                                                })()}
+                                                onChange={(e) => {
+                                                    const val = e.target.value;
+                                                    const town = dissolvedTownOptions.find(t => t.city_code === val);
+                                                    const parts = (data[`${prefix}DissolvedPlace`] || "").split(',').map((s: string) => s.trim());
+                                                    const provName = parts.length > 1 ? parts[parts.length - 1] : parts[0];
+                                                    handleDissolvedTownChange(prefix, val, town?.city_name || "", provName || "");
+                                                }}
+                                            >
+                                                <option value="" disabled hidden>Select Town</option>
+                                                {dissolvedTownOptions?.map(t => (
+                                                    <option key={`${prefix}dissolve-town-${t.city_code}`} value={t.city_code}>{t.city_name}</option>
+                                                ))}
+                                            </select>
+                                        </Field>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Field label="Country" required>
+                                            <select
+                                                className="flex h-10 w-full rounded-md border border-input bg-white px-3 py-2 text-sm focus:ring-2 focus:ring-primary outline-none"
+                                                value={data[`${prefix}DissolvedCountry`] || ""}
+                                                onChange={e => setData({ ...data, [`${prefix}DissolvedCountry`]: e.target.value })}
+                                            >
+                                                <option value="" disabled hidden>Select Country</option>
+                                                {countryOptions.map((c: any, idx: number) => {
+                                                    const val = typeof c === 'string' ? c : c.name;
+                                                    return <option key={`${prefix}dissolve-country-${val || idx}`} value={val}>{val}</option>;
+                                                })}
+                                            </select>
+                                        </Field>
+                                        <Field label="Province" required>
+                                            <Input
+                                                placeholder="Type province/state"
+                                                value={(() => {
+                                                    const fullPlace = (data[`${prefix}DissolvedPlace`] ?? "").toString();
+                                                    const commaIndex = fullPlace.indexOf(',');
+                                                    if (commaIndex === -1) return "";
+                                                    return fullPlace.substring(commaIndex + 1).trim();
+                                                })()}
+                                                onChange={(e) => {
+                                                    const prov = e.target.value;
+                                                    const fullPlace = (data[`${prefix}DissolvedPlace`] || "").toString();
+                                                    const commaIndex = fullPlace.indexOf(',');
+                                                    const town = commaIndex !== -1 ? fullPlace.substring(0, commaIndex).trim() : fullPlace.trim();
+                                                    setData({ ...data, [`${prefix}DissolvedPlace`]: `${town}, ${prov}` });
+                                                }}
+                                            />
+                                        </Field>
+                                        <Field label="Municipality" required>
+                                            <Input
+                                                placeholder="Type town/municipality"
+                                                value={(() => {
+                                                    const fullPlace = (data[`${prefix}DissolvedPlace`] ?? "").toString();
+                                                    const commaIndex = fullPlace.indexOf(',');
+                                                    if (commaIndex === -1) return fullPlace.trim();
+                                                    return fullPlace.substring(0, commaIndex).trim();
+                                                })()}
+                                                onChange={(e) => {
+                                                    const town = e.target.value;
+                                                    const fullPlace = (data[`${prefix}DissolvedPlace`] || "").toString();
+                                                    const commaIndex = fullPlace.indexOf(',');
+                                                    const prov = commaIndex !== -1 ? fullPlace.substring(commaIndex + 1).trim() : "";
+                                                    setData({ ...data, [`${prefix}DissolvedPlace`]: `${town}, ${prov}` });
+                                                }}
+                                            />
+                                        </Field>
+                                    </>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="pt-4 border-t border-slate-200/50">
+                            <Field label="Degree of relationship" required>
+                                <Input
+                                    placeholder="Enter relationship degree..."
+                                    value={data[`${prefix}RelationshipDegree`] || ""}
+                                    onChange={e => setData({ ...data, [`${prefix}RelationshipDegree`]: toTitleCase(e.target.value) })}
+                                />
+                            </Field>
+                        </div>
                 </motion.div>
             )}
         </AnimatePresence>

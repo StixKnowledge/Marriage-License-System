@@ -47,6 +47,8 @@ export default function MarriageForm() {
         bBrgyOptions,
         gBirthTownOptions,
         bBirthTownOptions,
+        gDissolvedTownOptions,
+        bDissolvedTownOptions,
         isSubmitted,
         setIsSubmitted,
         applicationCode,
@@ -64,6 +66,8 @@ export default function MarriageForm() {
         handleBrgyChange,
         handleBirthProvinceChange,
         handleBirthTownChange,
+        handleDissolvedProvinceChange,
+        handleDissolvedTownChange,
         handleReset,
         generateExcel,
         calculateAge,
@@ -356,7 +360,17 @@ export default function MarriageForm() {
                                                     </select>
                                                 </Field>
                                             </div>
-                                            <DissolutionFields prefix="g" data={formData} setData={setFormData} toTitleCase={toTitleCase} countryOptions={COUNTRY_OPTIONS} />
+                                            <DissolutionFields
+                                                prefix="g"
+                                                data={formData}
+                                                setData={setFormData}
+                                                toTitleCase={toTitleCase}
+                                                countryOptions={COUNTRY_OPTIONS}
+                                                provincesList={provincesList}
+                                                dissolvedTownOptions={gDissolvedTownOptions}
+                                                handleDissolvedProvinceChange={handleDissolvedProvinceChange}
+                                                handleDissolvedTownChange={handleDissolvedTownChange}
+                                            />
                                             <AnimatePresence>
                                                 {formData.gReligion === "Others" && (
                                                     <motion.div
@@ -470,7 +484,17 @@ export default function MarriageForm() {
                                                     </select>
                                                 </Field>
                                             </div>
-                                            <DissolutionFields prefix="b" data={formData} setData={setFormData} toTitleCase={toTitleCase} countryOptions={COUNTRY_OPTIONS} />
+                                            <DissolutionFields
+                                                prefix="b"
+                                                data={formData}
+                                                setData={setFormData}
+                                                toTitleCase={toTitleCase}
+                                                countryOptions={COUNTRY_OPTIONS}
+                                                provincesList={provincesList}
+                                                dissolvedTownOptions={bDissolvedTownOptions}
+                                                handleDissolvedProvinceChange={handleDissolvedProvinceChange}
+                                                handleDissolvedTownChange={handleDissolvedTownChange}
+                                            />
                                             <AnimatePresence>
                                                 {formData.bReligion === "Others" && (
                                                     <motion.div
