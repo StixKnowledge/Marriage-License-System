@@ -3,8 +3,8 @@ import { Field } from "./FormComponents";
 
 interface BirthPlaceSectionProps {
     prefix: 'g' | 'b';
-    sameAsAddress: boolean;
-    setSameAsAddress: (value: boolean) => void;
+    sameAsAddress: boolean | null;
+    setSameAsAddress: (value: boolean | null) => void;
     formData: any;
     setFormData: (data: any) => void;
     provincesList: any[];
