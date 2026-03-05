@@ -407,37 +407,50 @@ export default function GlobalOversightClient({
                 </div>
 
                 {/* ── Status Tabs ── */}
-                <div className="flex p-1.5 bg-zinc-100 rounded-[2rem] w-fit border border-zinc-200 shadow-inner overflow-x-auto no-scrollbar">
-                    {[
-                        { id: 'all', label: 'All', count: counts.all, color: 'text-zinc-600', bg: 'bg-zinc-200' },
-                        { id: 'pending', label: 'Pending', count: counts.pending, color: 'text-amber-600', bg: 'bg-amber-100' },
-                        { id: 'approved', label: 'Approve', count: counts.approved, color: 'text-emerald-600', bg: 'bg-emerald-100' },
-                        { id: 'completed', label: 'Complete', count: counts.completed, color: 'text-blue-600', bg: 'bg-blue-100' },
-                        { id: 'rejected', label: 'Rejected', count: counts.rejected, color: 'text-rose-600', bg: 'bg-rose-100' },
-                        { id: 'deleted', label: 'Deleted', count: counts.deleted, color: 'text-zinc-600', bg: 'bg-zinc-100' },
-                    ].map((tab) => (
-                        <button
-                            key={tab.id}
-                            onClick={() => handleTabChange(tab.id)}
-                            className={`
-                                relative flex items-center gap-3 px-6 py-3 rounded-[1.5rem] transition-all duration-300
-                                ${activeTab === tab.id ? 'bg-white shadow-xl shadow-zinc-200/50' : 'hover:bg-zinc-200/50'}
-                            `}
-                        >
-                            <span className={`text-xs font-black uppercase tracking-widest ${activeTab === tab.id ? 'text-zinc-900' : 'text-zinc-400'}`}>
-                                {tab.label}
-                            </span>
-                            <span className={`
-                                flex items-center justify-center px-2 py-0.5 rounded-full text-[10px] font-black
-                                ${activeTab === tab.id ? `${tab.bg} ${tab.color}` : 'bg-zinc-200 text-zinc-500'}
-                            `}>
-                                {tab.count}
-                            </span>
-                            {activeTab === tab.id && (
-                                <div className={`absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-zinc-900 shadow-lg`} />
-                            )}
-                        </button>
-                    ))}
+                <div className="relative group/tabs">
+                    {/* Left Fade Indicator */}
+                    <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none opacity-0 group-hover/tabs:opacity-100 transition-opacity md:hidden" />
+
+                    <div className="w-full max-w-full overflow-x-auto no-scrollbar scroll-smooth">
+                        <div className="flex p-1.5 bg-zinc-100 rounded-[2rem] w-fit border border-zinc-200 shadow-inner min-w-max mx-auto md:mx-0">
+                            {[
+                                { id: 'all', label: 'All', count: counts.all, color: 'text-zinc-600', bg: 'bg-zinc-200' },
+                                { id: 'pending', label: 'Pending', count: counts.pending, color: 'text-amber-600', bg: 'bg-amber-100' },
+                                { id: 'approved', label: 'Approve', count: counts.approved, color: 'text-emerald-600', bg: 'bg-emerald-100' },
+                                { id: 'completed', label: 'Complete', count: counts.completed, color: 'text-blue-600', bg: 'bg-blue-100' },
+                                { id: 'rejected', label: 'Rejected', count: counts.rejected, color: 'text-rose-600', bg: 'bg-rose-100' },
+                                { id: 'deleted', label: 'Deleted', count: counts.deleted, color: 'text-zinc-600', bg: 'bg-zinc-100' },
+                            ].map((tab) => (
+                                <button
+                                    key={tab.id}
+                                    onClick={() => handleTabChange(tab.id)}
+                                    className={`
+                                        relative flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-2.5 sm:py-3 rounded-[1.5rem] transition-all duration-300
+                                        ${activeTab === tab.id ? 'bg-white shadow-xl shadow-zinc-200/50' : 'hover:bg-zinc-200/50'}
+                                    `}
+                                >
+                                    <span className={`text-[10px] sm:text-xs font-black uppercase tracking-widest ${activeTab === tab.id ? 'text-zinc-900' : 'text-zinc-400'}`}>
+                                        {tab.label}
+                                    </span>
+                                    <span className={`
+                                        flex items-center justify-center px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-black
+                                        ${activeTab === tab.id ? `${tab.bg} ${tab.color}` : 'bg-zinc-200 text-zinc-500'}
+                                    `}>
+                                        {tab.count}
+                                    </span>
+                                    {activeTab === tab.id && (
+                                        <div className={`absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-zinc-900 shadow-lg`} />
+                                    )}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Right Fade Indicator */}
+                    <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-white via-white/80 to-transparent z-10 pointer-events-none md:hidden flex items-center justify-end pr-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-zinc-300 animate-pulse mr-1" />
+                        <div className="w-1.5 h-1.5 rounded-full bg-zinc-300 animate-pulse" style={{ animationDelay: '200ms' }} />
+                    </div>
                 </div>
 
                 <div className="relative group">
