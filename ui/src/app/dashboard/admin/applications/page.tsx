@@ -16,7 +16,7 @@ export default async function GlobalApplicationsPage({
     const sParams = await searchParams;
 
     const page = typeof sParams.page === 'string' ? Math.max(1, parseInt(sParams.page) || 1) : 1;
-    const limit = typeof sParams.limit === 'string' ? Math.max(1, parseInt(sParams.limit) || 50) : 50;
+    const limit = typeof sParams.limit === 'string' ? Math.max(1, parseInt(sParams.limit) || 10) : 10;
     const status = typeof sParams.status === 'string' ? sParams.status : 'pending';
 
     try {
@@ -32,7 +32,7 @@ export default async function GlobalApplicationsPage({
                     totalCount={result.totalCount || 0}
                     totalPages={result.totalPages || 0}
                     currentPage={result.currentPage || 1}
-                    limit={result.limit || 50}
+                    limit={result.limit || 10}
                     allCounts={result.allCounts || { all: 0, pending: 0, approved: 0, completed: 0, rejected: 0, deleted: 0 }}
                     initialStatus={status}
                     userRole={role}

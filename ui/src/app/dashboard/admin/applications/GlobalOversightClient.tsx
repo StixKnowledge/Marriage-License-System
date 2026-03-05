@@ -511,49 +511,54 @@ export default function GlobalOversightClient({
 
             {/* ── Pagination ── */}
             {totalPages > 1 && (
-                <div className="flex flex-col sm:flex-row items-center justify-between bg-white rounded-[2.5rem] border border-zinc-100 shadow-2xl shadow-zinc-200/50 p-6 gap-4">
-                    <div className="text-sm font-bold text-zinc-600">
-                        Showing {((currentPage - 1) * limit) + 1} to {Math.min(currentPage * limit, totalCount)} of {totalCount} applications
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <button
-                            onClick={() => router.push(`/dashboard/admin/applications?page=${currentPage - 1}&limit=${limit}&status=${activeTab}`)}
-                            disabled={currentPage <= 1}
-                            className="flex items-center gap-2 h-10 px-4 bg-zinc-100 hover:bg-zinc-200 disabled:bg-zinc-50 disabled:text-zinc-400 text-zinc-900 rounded-2xl font-bold text-sm transition-all disabled:cursor-not-allowed"
-                        >
-                            <ChevronLeft className="h-4 w-4" />
-                            Previous
-                        </button>
+                <div className="flex items-center justify-center gap-2 pt-10">
+                    <button
+                        onClick={() => router.push(`/dashboard/admin/applications?page=${Math.max(1, currentPage - 1)}&limit=${limit}&status=${activeTab}`)}
+                        className={`h-10 px-4 flex items-center justify-center rounded-xl font-bold text-sm transition-all shadow-sm ${currentPage === 1 ? 'bg-zinc-50 text-zinc-300 cursor-not-allowed' : 'bg-white text-zinc-600 hover:bg-zinc-50'
+                            }`}
+                        disabled={currentPage === 1}
+                    >
+                        &lt;
+                    </button>
 
-                        <div className="flex items-center gap-1">
-                            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                                const pageNum = Math.max(1, Math.min(totalPages - 4, currentPage - 2)) + i;
-                                if (pageNum > totalPages) return null;
-
+                    <div className="flex items-center gap-1.5">
+                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => {
+                            // Simple logic to show current, first, last, and neighbors
+                            if (
+                                pageNum === 1 ||
+                                pageNum === totalPages ||
+                                (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)
+                            ) {
                                 return (
                                     <button
                                         key={pageNum}
                                         onClick={() => router.push(`/dashboard/admin/applications?page=${pageNum}&limit=${limit}&status=${activeTab}`)}
-                                        className={`h-10 w-10 rounded-2xl font-bold text-sm transition-all ${pageNum === currentPage
+                                        className={`h-10 w-10 flex items-center justify-center rounded-xl font-bold text-sm transition-all shadow-sm ${pageNum === currentPage
                                             ? 'bg-zinc-900 text-white'
-                                            : 'bg-zinc-100 hover:bg-zinc-200 text-zinc-900'
+                                            : 'bg-white text-zinc-600 hover:bg-zinc-50'
                                             }`}
                                     >
                                         {pageNum}
                                     </button>
                                 );
-                            })}
-                        </div>
-
-                        <button
-                            onClick={() => router.push(`/dashboard/admin/applications?page=${currentPage + 1}&limit=${limit}&status=${activeTab}`)}
-                            disabled={currentPage >= totalPages}
-                            className="flex items-center gap-2 h-10 px-4 bg-zinc-100 hover:bg-zinc-200 disabled:bg-zinc-50 disabled:text-zinc-400 text-zinc-900 rounded-2xl font-bold text-sm transition-all disabled:cursor-not-allowed"
-                        >
-                            Next
-                            <ChevronRight className="h-4 w-4" />
-                        </button>
+                            } else if (
+                                (pageNum === currentPage - 2 && pageNum > 1) ||
+                                (pageNum === currentPage + 2 && pageNum < totalPages)
+                            ) {
+                                return <span key={pageNum} className="px-1 text-zinc-400 font-bold">...</span>;
+                            }
+                            return null;
+                        })}
                     </div>
+
+                    <button
+                        onClick={() => router.push(`/dashboard/admin/applications?page=${Math.min(totalPages, currentPage + 1)}&limit=${limit}&status=${activeTab}`)}
+                        className={`h-10 px-4 flex items-center justify-center rounded-xl font-bold text-sm transition-all shadow-sm ${currentPage === totalPages ? 'bg-zinc-50 text-zinc-300 cursor-not-allowed' : 'bg-white text-zinc-600 hover:bg-zinc-50'
+                            }`}
+                        disabled={currentPage === totalPages}
+                    >
+                        &gt;
+                    </button>
                 </div>
             )}
 
